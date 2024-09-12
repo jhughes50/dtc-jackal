@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Make sure processes in the container can connect to the x server
+XAUTH=/tmp/.docker.xauth
+if [ ! -f $XAUTH ]
+then
+    touch $XAUTH
+fi
+xauth_list=$(xauth nlist :0 | sed -e 's/^..../ffff/')
+if [ -n "$xauth_list" ]
+then
+  echo "$xauth_list" | xauth -f $XAUTH nmerge -
+fi
+chmod a+r $XAUTH
+xhost +
+
+docker run -it --rm --gpus all \
+    --network=host \
+    -u $UID \
+    --privileged \
+    -e "TERM=xterm-256color" \
+    -v "/dev:/dev" \
+    -v "/tmp/.X11-unix:/tmp/.X11-unix" \
+    -v "./data:/home/`whoami`/data" \
+    -e PULSE_SERVER=unix:/run/user/1000/pulse/native \
+    -v "/etc/localtime:/etc/localtime:ro" \
+    -v "tmux.conf:/home/`whoami`/.tmux.conf" \
+    --add-host dcist:192.168.8.100 \
+    --add-host dcist:127.0.0.1 \
+    --security-opt seccomp=unconfined \
+    -e DISPLAY=$DISPLAY \
+    -e QT_X11_NO_MITSHM=1 \
+    -e XAUTHORITY=$XAUTH \
+    -v "./rosvhr:/home/`whoami`/ws/src/rosvhr" \
+    --name dtc-jackal-$(hostname)-pyvhr \
+    dtc-jackal-$(hostname):pyvhr \
+    bash

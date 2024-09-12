@@ -1,0 +1,114 @@
+version: '3.8'
+services:
+  jackal-base:
+    build: jackal/
+    image: dtc-jackal-phobos:base
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+    entrypoint: /home/dtc/entrypoint.sh
+    logging:
+      driver: "local"
+      options:
+          max-size: "100000" 
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  jackal-acconeer:
+    build: acconeer/
+    image: dtc-jackal-phobos:acconeer
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+    entrypoint: /home/dtc/entrypoint.sh
+    logging:
+      driver: "local"
+      options:
+          max-size: "100m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  jackal-masking:
+    build: masking/
+    image: dtc-jackal-phobos:masking
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+    entrypoint: /home/dtc/entrypoint.sh
+    logging:
+      driver: "local"
+      options:
+          max-size: "100m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  jackal-whisper:
+    build: whisper/
+    image: dtc-jackal-phobos:whisper
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+      - /etc/asound.conf:/etc/asound.conf
+    entrypoint: /home/dtc/entrypoint.sh
+    logging:
+      driver: "local"
+      options:
+          max-size: "100m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
