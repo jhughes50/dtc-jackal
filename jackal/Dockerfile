@@ -243,6 +243,12 @@ RUN sudo chown $USER:$USER ~/.bashrc \
  && /bin/sh -c 'echo "source ~/ws/devel/setup.bash" >> ~/.bashrc' \
  && echo 'export PS1="\[$(tput setaf 2; tput bold)\]\u\[$(tput setaf 7)\]@\[$(tput setaf 3)\]\h\[$(tput setaf 7)\]:\[$(tput setaf 4)\]\W\[$(tput setaf 7)\]$ \[$(tput sgr0)\]"' >> ~/.bashrc
 
+ENV RGB=true
+ENV IR=false
+ENV EVENT=false
+ENV OUTSER=false
+ENV GPS=true
+
 COPY ./entrypoint.sh entrypoint.sh
 
 
