@@ -231,7 +231,6 @@ RUN sudo apt-get install -y usbutils ros-noetic-lms1xx
 RUN pip3 install torch torchvision torchaudio
 
 # Add Runtime ros packages
-RUN mkdir ws/src/GONe
 RUN cd ws/src/jackal && git pull
 
 # SETUP
@@ -249,6 +248,6 @@ ENV EVENT=false
 ENV OUTSER=false
 ENV GPS=true
 
-COPY ./entrypoint.sh entrypoint.sh
+COPY ./entrypoint.bash entrypoint.bash
 
 

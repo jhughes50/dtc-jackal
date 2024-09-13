@@ -89,7 +89,7 @@ RUN sudo apt-get update \
  && sudo apt-get install -y libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0
 
 COPY ./whisperer ws/src/whisperer/
-COPY ./entrypoint.sh entrypoint.sh
+COPY ./entrypoint.bash entrypoint.bash
 
 RUN git clone https://github.com/jhughes50/whisper_mic \
  && cd whisper_mic \
@@ -106,6 +106,7 @@ RUN sudo chown $USER:$USER ~/.bashrc \
 # build the ROS workspace 
 
 RUN sudo adduser $USER audio
+ENV RUN=true
 
 RUN cd ~/ws \
  && catkin config --extend /opt/ros/noetic \

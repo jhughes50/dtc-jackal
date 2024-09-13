@@ -20,7 +20,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev:/dev
       - ./data:/home/dtc/data
-    entrypoint: /home/dtc/entrypoint.sh
+    entrypoint: /home/dtc/entrypoint.bash
     logging:
       driver: "local"
       options:
@@ -40,6 +40,7 @@ services:
     privileged: true
     tty: true
     environment:
+      - RUN=false
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
@@ -48,7 +49,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev:/dev
       - ./data:/home/dtc/data
-    entrypoint: /home/dtc/entrypoint.sh
+    entrypoint: /home/dtc/entrypoint.bash
     logging:
       driver: "local"
       options:
@@ -68,6 +69,7 @@ services:
     privileged: true
     tty: true
     environment:
+      - RUN=true
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
@@ -76,7 +78,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev:/dev
       - ./data:/home/dtc/data
-    entrypoint: /home/dtc/entrypoint.sh
+    entrypoint: /home/dtc/entrypoint.bash
     logging:
       driver: "local"
       options:
@@ -96,6 +98,7 @@ services:
     privileged: true
     tty: true
     environment:
+      - RUN=false
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
@@ -105,7 +108,7 @@ services:
       - /dev:/dev
       - ./data:/home/dtc/data
       - /etc/asound.conf:/etc/asound.conf
-    entrypoint: /home/dtc/entrypoint.sh
+    entrypoint: /home/dtc/entrypoint.bash
     logging:
       driver: "local"
       options:

@@ -85,8 +85,9 @@ RUN sudo chown $USER:$USER ~/.bashrc \
  && echo 'export PS1="\[$(tput setaf 2; tput bold)\]\u\[$(tput setaf 7)\]@\[$(tput setaf 3)\]\h\[$(tput setaf 7)\]:\[$(tput setaf 4)\]\W\[$(tput setaf 7)\]$ \[$(tput sgr0)\]"' >> ~/.bashrc
 
 COPY ./acconeer_radar_sensor ws/src/acconeer_radar_sensor
-COPY ./entrypoint.sh entrypoint.sh
+COPY ./entrypoint.bash entrypoint.bash
 # build the ROS workspace 
+ENV RUN=true
 
 RUN cd ~/ws \
  && catkin config --extend /opt/ros/noetic \
