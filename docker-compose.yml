@@ -12,8 +12,8 @@ services:
       - IR=false
       - RGB=true
       - OUSTER=false
-      - ROS_IP=10.10.10.111
-      - ROS_MASTER_URI=http://10.10.10.111:11311/
+      - ROS_IP=127.0.0.1
+      - ROS_MASTER_URI=http://127.0.0.1:11311/
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
