@@ -24,6 +24,7 @@ include_directories(
 add_message_files(
   FILES
   GroundDetection.msg
+  GroundImage.msg
 )
 
 generate_messages(

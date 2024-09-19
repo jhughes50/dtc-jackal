@@ -43,7 +43,7 @@ services:
     privileged: true
     tty: true
     environment:
-      - RUN=false
+      - RUN=true
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
@@ -162,7 +162,7 @@ services:
     privileged: true
     tty: true
     environment:
-      - RUN=false
+      - RUN=true
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1

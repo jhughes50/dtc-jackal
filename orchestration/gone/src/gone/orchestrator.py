@@ -15,6 +15,7 @@ from std_msgs.msg import Bool, Int32, Float32, String, UInt8
 from apriltag_ros.msg import AprilTagDetectionArray
 from gone.services import ServiceModule
 from gone.msg import GroundDetection
+from gone.msg import GroundImage
 
 class Orchestrator:
 
@@ -25,6 +26,10 @@ class Orchestrator:
         self.casualty_id_ = None
         self.current_gps_ = NavSatFix()
         self.current_image_ = CompressedImage()
+
+        self.img_stop_ = True
+        self.img_count_ = 0
+        self.send_3_ = 0
 
         self.config_ = {}
         self.service_count_ = 0
@@ -51,6 +56,8 @@ class Orchestrator:
         rospy.Subscriber("/heart_rate/cv", Float32, self.vhrReadingCallback)
         
         self.detection_pub_ = rospy.Publisher("/ground_detection", GroundDetection, queue_size=2)
+        self.img_pub_ = rospy.Publisher("/ground_image", GroundImage, queue_size=3)
+
         rospy.Timer(rospy.Duration(rate), self.cycleCallback)
         rospy.Timer(rospy.Duration(2.0), self.monitorCallback)
 
@@ -126,8 +133,19 @@ class Orchestrator:
             self.config_["jackal-pyvhr"].reading = msg.data
 
     def imageCallback(self, msg: CompressedImage) -> None:
-        if self.trigger_ != 0:
-            self.current_image_ = msg
+        if self.trigger_ == None: return
+        if self.trigger_ > 0:
+            self.img_count_ += 1
+            if (self.img_count_ % 100 == 0) and self.send_3_ < 3:
+                self.send_3_ += 1
+                print("[GROUND-ORCHESTRATOR] Sending Image")
+                pmsg = GroundImage()
+                pmsg.image = msg
+                pmsg.header = msg.header
+                pmsg.casualty_id = self.casualty_id_
+                pmsg.gps = self.current_gps_
+        
+                self.img_pub_.publish(pmsg) 
 
     def gpsCallback(self, msg : NavSatFix) -> None:
         self.current_gps_ = msg
@@ -137,6 +155,8 @@ class Orchestrator:
         print("[GROUND-MONITOR] trigger: ", self.trigger_)
         if self.trigger_ == 0:
             self.casualty_id_ = None
+        else:
+            self.send_3_ = 0
 
     def overrideCallback(self, msg : Bool) -> None:
         if msg.data:
@@ -175,14 +195,17 @@ class Orchestrator:
             self.publish() 
 
     def monitorCallback(self, call) -> None:
-        info_str = "[GROUND-MONITOR] "
-     
-        for service, config in self.config_.items():
-            if config.run and config.received:
-                info_str = info_str + " " + service.upper() + termcolor.colored(" ready ", "green")
-            elif config.run and not config.received:
-                info_str = info_str + " " + service.upper() + termcolor.colored(" not ready ", "red")
-            else:
-                info_str = info_str + " " + service.upper() + " not running "
+        if self.trigger_ == None: return
 
-        print(info_str)
+        if self.trigger_ > 0:
+            info_str = "[GROUND-MONITOR] "
+         
+            for service, config in self.config_.items():
+                if config.run and config.received:
+                    info_str = info_str + " " + service.upper() + termcolor.colored(" ready ", "green")
+                elif config.run and not config.received:
+                    info_str = info_str + " " + service.upper() + termcolor.colored(" not ready ", "red")
+                else:
+                    info_str = info_str + " " + service.upper() + " not running "
+
+            print(info_str)

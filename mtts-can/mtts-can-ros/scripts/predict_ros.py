@@ -52,7 +52,7 @@ class HeartNetRos:
         rospy.Subscriber("/image", Image, self.imageCallback)
         rospy.Subscriber("/jackal_teleop/trigger", UInt8, self.triggerCallback)
 
-        self.hr_pub_ = rospy.Publisher("/hr_model", Float32, queue_size=2)
+        self.hr_pub_ = rospy.Publisher("/heart_rate/model", Float32, queue_size=2)
         rospy.Timer(rospy.Duration(2.0), self.statusCallback)
         rospy.loginfo("[MTTS-ROS] Heart Rate Net initialized")
 

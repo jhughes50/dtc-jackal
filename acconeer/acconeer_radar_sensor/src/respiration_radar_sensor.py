@@ -54,6 +54,17 @@ class BreathingData:
         message.respiration_rate_history = (
             self.breathing_rate_history.tolist() if isinstance(self.breathing_rate_history, np.ndarray) else self.breathing_rate_history)
         return message
+
+class TriggerHandler:
+
+    def __init__(self):
+        self.val_ = 0
+
+    def __call__(self):
+        return self.val_
+
+    def callback(self, msg : UInt8) -> None:
+        self.val_ = msg.data
         
         
 def sensor_data_publisher():
@@ -98,7 +109,9 @@ def sensor_data_publisher():
     ref_app = RefApp(client=client, sensor_id=sensor, ref_app_config=ref_app_config)
     ref_app.start()
 
+    trigger = TriggerHandler()
 
+    rospy.Subscriber("/jackal_teleop/trigger", UInt8, trigger.callback)
 
     # Publishers for different data streams
     presence_pub = rospy.Publisher('/acconeer/presence', Presence, queue_size=10)
@@ -117,91 +130,91 @@ def sensor_data_publisher():
         if ref_app_result is None:
             rospy.logwarn("Acconeer: No valid sensor data received.")
             continue
-
-        try:
-            
-            presence = PresenceData()
-            breathing = BreathingData()
-
-            app_state = ref_app_result.app_state
-
-            # Presence results (inter, intra, distances, status)
-            presence.inter = ref_app_result.presence_result.inter
-            presence.intra = ref_app_result.presence_result.intra
-            presence.distances_being_analyzed = ref_app_result.distances_being_analyzed
-            
-            # Presence detection status
-            if app_state == AppState.NO_PRESENCE_DETECTED:
-                presence.status = "No presence detected"
-            elif app_state == AppState.DETERMINE_DISTANCE_ESTIMATE:
-                presence.status = "Determining distance with presence"
-            elif (app_state == AppState.ESTIMATE_BREATHING_RATE 
-                  and presence.distances_being_analyzed is not None
-                  and len(presence.distances_being_analyzed) > 1):
-                start = presence.distances_being_analyzed[0]
-                end = presence.distances_being_analyzed[1]
-                s = slice(start, end)
-                distance_slice = distances[s]
-                start_m = "{:.2f}".format(distance_slice[0])
-                end_m = "{:.2f}".format(distance_slice[-1])
-                if ref_app_config.use_presence_processor:
-                    presence.status = (
-                        "Presence at distance " + start_m + "-" + end_m + "m"
-                    )
-                else:
-                    presence.status = "Presence distance detection disabled"
-            elif app_state == AppState.INTRA_PRESENCE_DETECTED:
-                presence.status = "Large motion detected"
-            else:
-                presence.status = ""
+        if trigger() > 0:
+            try:
                 
-    
-            # breathing status
-            if ref_app_result.breathing_result is not None:
-                breathing_result = ref_app_result.breathing_result.extra_result
-                breathing.time_vector = breathing_result.time_vector
-                breathing.motion = breathing_result.breathing_motion
-                breathing.psd = breathing_result.psd
-                breathing.psd_frequencies = breathing_result.frequencies
-                breathing.all_breathing_rate_history = breathing_result.all_breathing_rate_history
-                breathing.breathing_rate_history = breathing_result.breathing_rate_history
-                # if not np.isnan(breathing.breathing_rate_history[-1]):
-                #     breathing.breathing_rate = breathing_rate_history[-1]
-                # else:
-                #     breathing.breathing_rate = NaN
-                breathing.breathing_rate = ref_app_result.breathing_result.breathing_rate
-            
-            # breathing measurement status
-            if app_state == AppState.ESTIMATE_BREATHING_RATE:
-                if (
-                    ref_app_result.breathing_result is not None
-                    and breathing.breathing_rate is None
-                ):
-                    breathing.status = "Initializing respiration detection"
-                elif breathing.breathing_rate is not None:
-                    breathing.status = f"Respiration rate: {breathing.breathing_rate:.1f} bpm"
-            else:
-                breathing.status = "Waiting for distance"
-                 
-                 
-            
-            # Publish the data to the corresponding topics
-            presence_pub.publish(presence.get_ROS_message())
-            breathing_pub.publish(breathing.get_ROS_message())
-            if (breathing.breathing_rate is not None 
-                and not (np.isnan(breathing.breathing_rate))):
-                breathing_rate_pub.publish(breathing.breathing_rate)
-                rospy.loginfo(f"RESPIRATION RATE: {breathing.breathing_rate:.1f}")
-            presence_status_pub.publish(presence.status)
-            breathing_status_pub.publish(breathing.status)
-            rospy.loginfo(f"PRESENCE: {presence.status}; RESPIRATION: {breathing.status}")
+                presence = PresenceData()
+                breathing = BreathingData()
 
-            rate.sleep()
-        except et.PGProccessDiedException:
-            break
-        except Exception as e:
-            rospy.logerr(f"An unexpected error occurred: {e}")
-            break
+                app_state = ref_app_result.app_state
+
+                # Presence results (inter, intra, distances, status)
+                presence.inter = ref_app_result.presence_result.inter
+                presence.intra = ref_app_result.presence_result.intra
+                presence.distances_being_analyzed = ref_app_result.distances_being_analyzed
+                
+                # Presence detection status
+                if app_state == AppState.NO_PRESENCE_DETECTED:
+                    presence.status = "No presence detected"
+                elif app_state == AppState.DETERMINE_DISTANCE_ESTIMATE:
+                    presence.status = "Determining distance with presence"
+                elif (app_state == AppState.ESTIMATE_BREATHING_RATE 
+                      and presence.distances_being_analyzed is not None
+                      and len(presence.distances_being_analyzed) > 1):
+                    start = presence.distances_being_analyzed[0]
+                    end = presence.distances_being_analyzed[1]
+                    s = slice(start, end)
+                    distance_slice = distances[s]
+                    start_m = "{:.2f}".format(distance_slice[0])
+                    end_m = "{:.2f}".format(distance_slice[-1])
+                    if ref_app_config.use_presence_processor:
+                        presence.status = (
+                            "Presence at distance " + start_m + "-" + end_m + "m"
+                        )
+                    else:
+                        presence.status = "Presence distance detection disabled"
+                elif app_state == AppState.INTRA_PRESENCE_DETECTED:
+                    presence.status = "Large motion detected"
+                else:
+                    presence.status = ""
+                    
+        
+                # breathing status
+                if ref_app_result.breathing_result is not None:
+                    breathing_result = ref_app_result.breathing_result.extra_result
+                    breathing.time_vector = breathing_result.time_vector
+                    breathing.motion = breathing_result.breathing_motion
+                    breathing.psd = breathing_result.psd
+                    breathing.psd_frequencies = breathing_result.frequencies
+                    breathing.all_breathing_rate_history = breathing_result.all_breathing_rate_history
+                    breathing.breathing_rate_history = breathing_result.breathing_rate_history
+                    # if not np.isnan(breathing.breathing_rate_history[-1]):
+                    #     breathing.breathing_rate = breathing_rate_history[-1]
+                    # else:
+                    #     breathing.breathing_rate = NaN
+                    breathing.breathing_rate = ref_app_result.breathing_result.breathing_rate
+                
+                # breathing measurement status
+                if app_state == AppState.ESTIMATE_BREATHING_RATE:
+                    if (
+                        ref_app_result.breathing_result is not None
+                        and breathing.breathing_rate is None
+                    ):
+                        breathing.status = "Initializing respiration detection"
+                    elif breathing.breathing_rate is not None:
+                        breathing.status = f"Respiration rate: {breathing.breathing_rate:.1f} bpm"
+                else:
+                    breathing.status = "Waiting for distance"
+                     
+                     
+                
+                # Publish the data to the corresponding topics
+                presence_pub.publish(presence.get_ROS_message())
+                breathing_pub.publish(breathing.get_ROS_message())
+                if (breathing.breathing_rate is not None 
+                    and not (np.isnan(breathing.breathing_rate))):
+                    breathing_rate_pub.publish(breathing.breathing_rate)
+                    #rospy.loginfo(f"RESPIRATION RATE: {breathing.breathing_rate:.1f}")
+                presence_status_pub.publish(presence.status)
+                breathing_status_pub.publish(breathing.status)
+                #rospy.loginfo(f"PRESENCE: {presence.status}; RESPIRATION: {breathing.status}")
+
+                rate.sleep()
+            except et.PGProccessDiedException:
+                break
+            except Exception as e:
+                rospy.logerr(f"An unexpected error occurred: {e}")
+                break
 
     ref_app.stop()
     client.close()
