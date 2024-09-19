@@ -1,0 +1,23 @@
+
+  jackal-pyvhr:
+    build: pybhr/
+    image: dtc-jackal-phobos:pyvhr
+    network_mode: host
+    privileged: true
+    environment:
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+    entrypoint: /home/dtc/entrypoint.sh
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

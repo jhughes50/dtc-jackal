@@ -1,0 +1,245 @@
+version: '3.8'
+services:
+  jackal-base:
+    build: jackal/
+    image: dtc-jackal-phobos:base
+    network_mode: host
+    privileged: true
+    tty: true
+    environment: 
+      - GPS=false
+      - EVENT=false
+      - IR=false
+      - RGB=true
+      - OUSTER=false
+      - ROS_IP=10.10.10.111
+      - ROS_MASTER_URI=http://10.10.10.111:11311/
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+      - ./jackal/watchstate/:/home/dtc/ws/src/MOCHA/interface_rajant/scripts/thirdParty/watchstate/ 
+    entrypoint: /home/dtc/entrypoint.bash
+    logging:
+      driver: "local"
+      options:
+          max-size: "100000" 
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  jackal-acconeer:
+    build: acconeer/
+    image: dtc-jackal-phobos:acconeer
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - RUN=false
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+    entrypoint: /home/dtc/entrypoint.bash
+    logging:
+      driver: "local"
+      options:
+          max-size: "100m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  jackal-ebreather:
+    build: ebreather/
+    image: dtc-jackal-phobos:ebreather
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - RUN=false
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+    entrypoint: /home/dtc/entrypoint.bash
+    logging:
+      driver: "local"
+      options:
+          max-size: "100m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  jackal-masking:
+    build: masking/
+    image: dtc-jackal-phobos:masking
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - RUN=false
+      - TERM=xterm-256color
+      - ROS_IP=127.0.0.1
+      - ROS_MASTER_URI=http://localhost:11311/
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+    entrypoint: /home/dtc/entrypoint.bash
+    logging:
+      driver: "local"
+      options:
+          max-size: "100m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  jackal-whisper:
+    build: whisper/
+    image: dtc-jackal-phobos:whisper
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - RUN=true
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+      - /etc/asound.conf:/etc/asound.conf
+    entrypoint: /home/dtc/entrypoint.bash
+    logging:
+      driver: "local"
+      options:
+          max-size: "100m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  jackal-mtts:
+    build: mtts-can/
+    image: dtc-jackal-phobos:mtts
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - RUN=false
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+    entrypoint: /home/dtc/entrypoint.bash
+    logging:
+      driver: "local"
+      options:
+          max-size: "100m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  jackal-pyvhr:
+    build: pyvhr/
+    image: dtc-jackal-phobos:pyvhr
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - RUN=false
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+    entrypoint: /home/dtc/entrypoint.bash
+    logging:
+      driver: "local"
+      options:
+          max-size: "100m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  jackal-orchestration:
+    build: orchestration/
+    image: dtc-jackal-phobos:orchestrator
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - RUN=true
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+      - ./docker-compose.yml:/home/dtc/docker-compose.yml
+      - ./orchestration/config/sensor_services.yml:/home/dtc/sensor_services.yml
+    entrypoint: /home/dtc/entrypoint.bash
+    logging:
+      driver: "local"
+      options:
+          max-size: "100m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

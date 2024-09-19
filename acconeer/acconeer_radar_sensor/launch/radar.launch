@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  
+  <arg name="serial_port"/>
+  <arg name="dev"/>
+
+  <node pkg="acconeer_radar_sensor" type="respiration_radar_sensor.py" name="respiration_radar_sensor">
+    <param name="serial_port" value="--serial-port"/>
+    <param name="dev" value="/dev/serial/by-id/usb-Silicon_Labs_Acconeer_XE125_R1DNL23122100266-if00-port0"/> 
+  </node>
+</launch>
+

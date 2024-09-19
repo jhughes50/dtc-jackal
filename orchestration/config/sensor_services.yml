@@ -1,0 +1,6 @@
+services:
+  - jackal-acconeer
+  - jackal-ebreather
+  - jackal-whisper
+  - jackal-pyvhr
+  - jackal-mtts
