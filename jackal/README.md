@@ -25,4 +25,4 @@ The device drivers are as followed:
 Save data in the `~/data` directroy in the image, it is persistent with the `data` directory in this repo.
 
 ### Other
-Use `build.bash` if you need to rebuild the image without installing the udev rules. Use `join.bash` to join a running image, or simply type `join` in the trerminal. We use `dtc-jackal` as the image name.
+Use `build.bash` if you need to rebuild the image without installing the udev rules. Use `join.bash` to join a running image, or simply type `join` in the trerminal. We use `dtc-jackal` as the image name. To setup a spektrum controller, bind the controller and reciever. Then plug the reciever into the jackal and run `jstest-gtk` and follow the steps to calibrate the controller. Then save the calibration config with `sudo jscal-store /dev/input/js0`.

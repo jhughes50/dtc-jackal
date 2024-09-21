@@ -10,6 +10,8 @@
 import rospy
 from std_msgs.msg import Bool, String, UInt8
 from whisper_mic import WhisperMic
+from sound_play.msg import SoundRequest
+from sound_play.libsoundplay import SoundClient
 
 class LiteralListener:
 
@@ -18,6 +20,8 @@ class LiteralListener:
         model = rospy.get_param("whisperer/model")
 
         self.trigger_ = 0
+
+        self.soundhandle_ = SoundClient()
 
         self.mic_ = WhisperMic(model=model, english=True, model_root=root)
         self.timeout_ = rospy.get_param("/whisperer/timeout", default=10)
@@ -30,6 +34,14 @@ class LiteralListener:
         self.trigger_ = msg.data
         if self.trigger_ > 0:
             print("[WHISPERER][STATUS] Trigger Recieved")
+
+            # speak
+            speech = "Please remain still. We are here to help."
+            voice = 'voice_kal_diphone'
+            volume = 1.0
+            self.soundhandle_.say(speech, voice, volume)
+            
+            # listen
             result = self.mic_.listen(timeout=self.timeout_) # blocking function
             rospy.loginfo("[WHISPERER] Result %s" %result)
             text_msg = String()

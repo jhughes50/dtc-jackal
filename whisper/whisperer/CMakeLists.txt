@@ -163,6 +163,7 @@ include_directories(
 catkin_install_python(PROGRAMS
   src/whisperer_node.py
   src/mic_node.py
+  src/speaker_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

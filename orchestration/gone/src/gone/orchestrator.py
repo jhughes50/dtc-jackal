@@ -85,7 +85,10 @@ class Orchestrator:
 
     def tagCallback(self, msg : AprilTagDetectionArray) -> None:
         if self.trigger_ == 0 and self.casualty_id_ == None:
-            if len(msg.detections) <= 1:
+            if len(msg.detections) == 0:
+                print(termcolor.colored("[GROUND ORCHESTRATION] [WARN] No ID detected using 0", "yellow")) 
+                self.casualty_id_ = 0
+            elif len(msg.detections) == 1:
                 self.casualty_id_ = msg.detections[0].id[0]
             else:
                 for i, d in enumerate(msg.detections):
@@ -104,31 +107,31 @@ class Orchestrator:
 
     def whisperCallback(self, msg : String) -> None:
         if self.trigger_ != 0:
-            print("[GROUND-ORCHESTRATOR] Received whisper text")
+            print(termcolor.colored("[GROUND-ORCHESTRATOR] Received whisper text","green"))
             self.config_["jackal-whisper"].received = True
             self.config_["jackal-whisper"].reading = msg.data
 
     def eventReadingCallback(self, msg : Float32) -> None:
         if self.trigger_ != 0:
-            print("[GROUND-ORCHESTRATION] Received event reading")
+            print(termcolor.colored("[GROUND-ORCHESTRATION] Received event reading","green"))
             self.config_["jackal-ebreather"].received = True
             self.config_["jackal-ebreather"].reading = msg.data
 
     def acconeerReadingCallback(self, msg : Float32) -> None:
         if self.trigger_ != 0:
-            print("[GROUND-ORCHESTRATION] Received acconeer reading")
+            print(termcolor.colored("[GROUND-ORCHESTRATION] Received acconeer reading","green"))
             self.config_["jackal-acconeer"].received = True
             self.config_["jackal-acconeer"].reading = msg.data
 
     def mttsReadingCallback(self, msg : Float32) -> None:
         if self.trigger_ != 0:
-            print("[GROUND-ORCHESATRATION] Received MTTS reading")
+            print(termcolor.colored("[GROUND-ORCHESATRATION] Received MTTS reading","green"))
             self.config_["jackal-mtts"].received = True
             self.config_["jackal-mtts"].reading = msg.data
 
     def vhrReadingCallback(self, msg : Float32) -> None:
         if self.trigger_ != 0:
-            print("[GROUND-DETECTION] Received VHR reading")
+            print(termcolor.colored("[GROUND-DETECTION] Received VHR reading","green"))
             self.config_["jackal-pyvhr"].recieved = True
             self.config_["jackal-pyvhr"].reading = msg.data
 
@@ -142,10 +145,11 @@ class Orchestrator:
                 pmsg = GroundImage()
                 pmsg.image = msg
                 pmsg.header = msg.header
-                pmsg.casualty_id = self.casualty_id_
+                pmsg.casualty_id.data = self.casualty_id_
                 pmsg.gps = self.current_gps_
         
                 self.img_pub_.publish(pmsg) 
+                print("[GROUND-ORCHESTRATOR] Image Sent")
 
     def gpsCallback(self, msg : NavSatFix) -> None:
         self.current_gps_ = msg
@@ -173,14 +177,19 @@ class Orchestrator:
 
         if self.config_["jackal-whisper"].run:
             msg.whisper = self.config_["jackal-whisper"].reading
+            self.config_["jackal-whisper"].received = False 
         if self.config_["jackal-acconeer"].run:
             msg.acconeer_respiration_rate = self.config_["jackal-acconeer"].reading
+            self.config_["jackal-acconeer"].received=False
         if self.config_["jackal-ebreather"].run:
             msg.event_respiration_rate = self.config_["jackal-ebreather"].reading
+            self.config_["jackal-ebreather"].received = False
         if self.config_["jackal-mtts"].run:
             msg.neural_heart_rate = self.config_["jackal-mtts"].reading
+            self.config_["jackal-mtts"].received = False
         if self.config_["jackal-pyvhr"].run:
             msg.cv_heart_rate = self.config_["jackal-pyvhr"].reading
+            self.config_["jackal-pyvhr"].received = False
 
         self.detection_pub_.publish(msg)
 
@@ -191,7 +200,7 @@ class Orchestrator:
                 ready += 1
         
         if ready == self.service_count_:
-            print("[GROUND-ORCHESTRATION] PUBLISHING DETECTION")
+            print(termcolor.colored("[GROUND-ORCHESTRATION] PUBLISHING DETECTION","green"))
             self.publish() 
 
     def monitorCallback(self, call) -> None:

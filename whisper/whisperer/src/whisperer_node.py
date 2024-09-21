@@ -4,7 +4,7 @@ import torch
 import os
 import whisper
 
-from std_msgs.msg import Bool
+from std_msgs.msg import UInt8
 from std_msgs.msg import String
 from sound_play.msg import SoundRequest
 from sound_play.libsoundplay import SoundClient
@@ -21,9 +21,9 @@ rospy.sleep(1)
 
 whisper_pub = rospy.Publisher('/whisper', String, queue_size=10)
 
-def callback(msg : Bool) -> None:
+def callback(msg : UInt8) -> None:
   trigger = msg.data
-  if trigger:
+  if trigger > 0:
     # play audio
     speech = "Please remain still. We are here to help."
     voice = 'voice_kal_diphone'
@@ -61,7 +61,7 @@ def callback(msg : Bool) -> None:
   
 def listener():
   rospy.init_node('audio_detection_node', anonymous=True)
-  rospy.Subscriber("/jackal_teleop/trigger", Bool, callback)
+  rospy.Subscriber("/jackal_teleop/trigger", UInt8, callback)
   # keeps python from exiting until this node is stopped
   rospy.spin()
 

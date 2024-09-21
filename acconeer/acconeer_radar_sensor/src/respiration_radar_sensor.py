@@ -9,7 +9,7 @@
 
 import rospy
 import numpy as np
-from std_msgs.msg import Float32, String
+from std_msgs.msg import Float32, String, UInt8
 import acconeer.exptool as et
 from acconeer.exptool import a121
 from acconeer.exptool.a121.algo.breathing import AppState, RefApp
@@ -29,8 +29,15 @@ class PresenceData:
         message = Presence()
         message.inter = self.inter.tolist() if isinstance(self.inter, np.ndarray) else self.inter  # Convert numpy array to list
         message.intra = self.intra.tolist() if isinstance(self.intra, np.ndarray) else self.intra  # Convert numpy array to list
-        message.distances_being_analyzed = self.distances_being_analyzed.tolist() if isinstance(self.distances_being_analyzed, np.ndarray) else self.distances_being_analyzed
+        # Ensure distances_being_analyzed is either a list/tuple or set to an empty list
+        if isinstance(self.distances_being_analyzed, np.ndarray):
+            message.distances_being_analyzed = self.distances_being_analyzed.tolist()
+        elif isinstance(self.distances_being_analyzed, list) or isinstance(self.distances_being_analyzed, tuple):
+            message.distances_being_analyzed = self.distances_being_analyzed
+        else:
+            message.distances_being_analyzed = []  # Default to an empty list if None or invalid
         return message
+
 
 class BreathingData:
     def __init__(self):
@@ -59,13 +66,30 @@ class TriggerHandler:
 
     def __init__(self):
         self.val_ = 0
+        self.time_ = 0
+        self.sent_ = False
 
     def __call__(self):
         return self.val_
+    
+    @property
+    def time(self) -> float:
+        now = rospy.get_time() 
+        return now - self.time_
+
+    @property
+    def sent(self) -> bool:
+        return self.sent_
+
+    def reset(self):
+        self.sent_ = True
+        self.time_ = 0
 
     def callback(self, msg : UInt8) -> None:
-        self.val_ = msg.data
-        
+        self.val_ = msg.data        
+        if self.val_ != 0:
+            self.sent_ = False
+            self.time_ = rospy.get_time()
         
 def sensor_data_publisher():
     rospy.init_node('respiration_radar_sensor', anonymous=True)
@@ -73,6 +97,13 @@ def sensor_data_publisher():
     args = a121.ExampleArgumentParser().parse_args()
     et.utils.config_logging(args)
 
+    trigger = TriggerHandler()
+
+    # ROS configuration
+    frequency_sensor_probing = 120 # Sensor data sampling rate in Hz; I think the sensor data comes in around 44 Hz
+    frequency_ros_message = 4      # Frequency to output sensor data to ROS in Hz. Must be <= frequency_sensor_probing
+    frequency_ros_log = 1          # Frequency to output log to ROS in Hz. Must be <= frequency_ros_message
+    
     # Sensor and configuration setup
     sensor = 1
     breathing_processor_config = BreathingProcessorConfig(
@@ -90,9 +121,9 @@ def sensor_data_publisher():
     ref_app_config = RefAppConfig(
         use_presence_processor=True,
         num_distances_to_analyze=3,  		# num distances to analyze, centered around the range
-        start_m=.3,  				# start of measurement range in meters
+        start_m=.8,  				# start of measurement range in meters
         end_m=1.5,   				# end of measurement range in meters
-        distance_determination_duration=5,  	# how long in seconds to determine presence
+        distance_determination_duration=3,  	# how long in seconds to determine presence
         frame_rate=20,  			# default = 20
         sweeps_per_frame=16, 			# default = 16
         breathing_config=breathing_processor_config,
@@ -109,8 +140,6 @@ def sensor_data_publisher():
     ref_app = RefApp(client=client, sensor_id=sensor, ref_app_config=ref_app_config)
     ref_app.start()
 
-    trigger = TriggerHandler()
-
     rospy.Subscriber("/jackal_teleop/trigger", UInt8, trigger.callback)
 
     # Publishers for different data streams
@@ -120,16 +149,23 @@ def sensor_data_publisher():
     presence_status_pub = rospy.Publisher('/acconeer/presence_status', String, queue_size=10)
     breathing_status_pub = rospy.Publisher('/acconeer/respiration_status', String, queue_size=10)
 
-
-    rate = rospy.Rate(120)  # 120 Hz. I think the sensor data comes in around 44 Hz
+    rate_db = [0]
+    
+    rate = rospy.Rate(frequency_sensor_probing)
+    sensor_probing_counter = 0 
 
     # Loop to read sensor data
     while not rospy.is_shutdown():
         ref_app_result = ref_app.get_next()
+        sensor_probing_counter = (sensor_probing_counter + 1) % frequency_sensor_probing
+        #print(str(sensor_probing_counter)+ " " + str(((sensor_probing_counter * frequency_ros_log) % frequency_sensor_probing)==0))
 
         if ref_app_result is None:
             rospy.logwarn("Acconeer: No valid sensor data received.")
             continue
+            
+        #if ((sensor_probing_counter * frequency_ros_message) % frequency_sensor_probing) == 0:
+        #    continue
         if trigger() > 0:
             try:
                 
@@ -200,14 +236,27 @@ def sensor_data_publisher():
                 
                 # Publish the data to the corresponding topics
                 presence_pub.publish(presence.get_ROS_message())
-                breathing_pub.publish(breathing.get_ROS_message())
                 if (breathing.breathing_rate is not None 
                     and not (np.isnan(breathing.breathing_rate))):
-                    breathing_rate_pub.publish(breathing.breathing_rate)
-                    #rospy.loginfo(f"RESPIRATION RATE: {breathing.breathing_rate:.1f}")
+                    #breathing_rate_pub.publish(breathing.breathing_rate)
+                    breathing_pub.publish(breathing.get_ROS_message())
+                    rate_db.append(breathing.breathing_rate)
+                    if trigger.time > 15.0 and not trigger.sent:
+                        trigger.reset()
+                        msg = Float32()
+                        msg.data = max(rate_db)
+                        breathing_rate_pub.publish(msg)
+                    if ((sensor_probing_counter * frequency_ros_log) % frequency_sensor_probing) == 0:
+                        rospy.loginfo(f"RESPIRATION RATE: {breathing.breathing_rate:.1f}")
+                elif trigger.time > 15.0 and not trigger.sent: 
+                    trigger.reset()
+                    msg = Float32()
+                    msg.data = max(rate_db)
+                    breathing_rate_pub.publish(msg)
                 presence_status_pub.publish(presence.status)
                 breathing_status_pub.publish(breathing.status)
-                #rospy.loginfo(f"PRESENCE: {presence.status}; RESPIRATION: {breathing.status}")
+                if ((sensor_probing_counter * frequency_ros_log) % frequency_sensor_probing) == 0:
+                    rospy.loginfo(f"PRESENCE: {presence.status}; RESPIRATION: {breathing.status}")
 
                 rate.sleep()
             except et.PGProccessDiedException:
