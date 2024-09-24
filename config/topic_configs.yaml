@@ -1,0 +1,22 @@
+ground_robot:
+  - msg_topic: "/ground_detection"
+    msg_type: "gone/GroundDetection"
+    msg_priority: "HIGH_PRIORITY"
+    msg_history: "LAST_MESSAGE"
+
+  - msg_topic: "/ground_image"
+    msg_type: "gone/GroundImage"
+    msg_priority: "HIGH_PRIORITY"
+    msg_history: "LAST_MESSAGE"
+
+aerial_robot:
+  - msg_topic: "/sync/aerial_detections"
+    msg_type: "tdd2/TDDetection"
+    msg_priority: "HIGH_PRIORITY"
+    msg_history: "LAST_MESSAGE"
+
+base_station:
+  - msg_topic: "/override"
+    msg_type: "std_msgs/Bool"
+    msg_priority: "HIGH_PRIORITY"
+    msg_history: "LAST_MESSAGE"

@@ -37,6 +37,6 @@ class ServiceModule:
     def reading(self):
         return self.reading_
 
-    @received.setter
+    @reading.setter
     def reading(self, r):
         self.reading_ = r

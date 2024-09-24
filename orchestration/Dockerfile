@@ -75,6 +75,7 @@ RUN sudo adduser $USER tty
 RUN sudo adduser $USER plugdev
 
 RUN pip3 install termcolor
+RUN sudo apt-get install -y ros-noetic-vision-msgs
 
 # setup environment
 ARG NAME
@@ -93,8 +94,17 @@ ENV RUN=true
 RUN cd ws/src \
  && git clone https://github.com/AprilRobotics/apriltag.git \
  && git clone https://github.com/AprilRobotics/apriltag_ros.git \
+ && git clone https://github.com/KumarRobotics/MOCHA \
  && cd .. \
  && rosdep install --from-paths src --ignore-src -r -y
+
+RUN sudo apt update \
+ && pip3 install rospkg \
+ && pip3 install defusedxml \
+ && sudo apt install -y python3-zmq 
+
+RUN sudo apt install -y default-jre
+RUN sudo apt-get install -y iputils-ping
 
 COPY config/tags.yaml /home/$USER/ws/src/apriltag_ros/apriltag_ros/config/
 

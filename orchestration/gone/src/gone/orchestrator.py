@@ -85,23 +85,24 @@ class Orchestrator:
 
     def tagCallback(self, msg : AprilTagDetectionArray) -> None:
         if self.trigger_ == 0 and self.casualty_id_ == None:
-            if len(msg.detections) == 0:
-                print(termcolor.colored("[GROUND ORCHESTRATION] [WARN] No ID detected using 0", "yellow")) 
-                self.casualty_id_ = 0
-            elif len(msg.detections) == 1:
-                self.casualty_id_ = msg.detections[0].id[0]
-            else:
-                for i, d in enumerate(msg.detections):
-                    tag_cam_pose = d.pose.pose.pose
-                    tag_id = d.id[0]
-                    if i == 0:
-                        lesst_id = tag_id
-                        least_pose = tag_cam_pose
-                        continue
-                    if tag_cam_pose.z < prev_pose.z:
-                        least_id = tag_id
-                        least_pose = tag_cam_pose
-                self.casualty_id_ = least_id
+            #if len(msg.detections) == 0:
+            #    print(termcolor.colored("[GROUND ORCHESTRATION] [WARN] No ID detected using 0", "yellow")) 
+            #    self.casualty_id_ = 0
+            #elif len(msg.detections) == 1:
+            #    self.casualty_id_ = msg.detections[0].id[0]
+            #else:
+            
+            for i, d in enumerate(msg.detections):
+                tag_cam_pose = d.pose.pose.pose
+                tag_id = d.id[0]
+                if i == 0:
+                    lesst_id = tag_id
+                    least_pose = tag_cam_pose
+                    continue
+                if tag_cam_pose.z < prev_pose.z:
+                    least_id = tag_id
+                    least_pose = tag_cam_pose
+            self.casualty_id_ = least_id
             print("[GROUND-ORCHESTRATOR] Looking at ID: ", self.casualty_id_)
 
 
@@ -125,14 +126,14 @@ class Orchestrator:
 
     def mttsReadingCallback(self, msg : Float32) -> None:
         if self.trigger_ != 0:
-            print(termcolor.colored("[GROUND-ORCHESATRATION] Received MTTS reading","green"))
+            print(termcolor.colored("[GROUND-ORCHESATRATION] Received MTTS reading","green"), msg.data)
             self.config_["jackal-mtts"].received = True
             self.config_["jackal-mtts"].reading = msg.data
 
     def vhrReadingCallback(self, msg : Float32) -> None:
         if self.trigger_ != 0:
             print(termcolor.colored("[GROUND-DETECTION] Received VHR reading","green"))
-            self.config_["jackal-pyvhr"].recieved = True
+            self.config_["jackal-pyvhr"].received = True
             self.config_["jackal-pyvhr"].reading = msg.data
 
     def imageCallback(self, msg: CompressedImage) -> None:
@@ -172,23 +173,22 @@ class Orchestrator:
         msg.header = self.current_image_.header
         msg.header.frame_id = self.name_
         msg.gps = self.current_gps_
-        msg.image = self.current_image_
-        msg.casualty_id = self.casualty_id_
+        msg.casualty_id.data = self.casualty_id_
 
         if self.config_["jackal-whisper"].run:
-            msg.whisper = self.config_["jackal-whisper"].reading
+            msg.whisper.data = self.config_["jackal-whisper"].reading
             self.config_["jackal-whisper"].received = False 
         if self.config_["jackal-acconeer"].run:
-            msg.acconeer_respiration_rate = self.config_["jackal-acconeer"].reading
+            msg.acconeer_respiration_rate.data = self.config_["jackal-acconeer"].reading
             self.config_["jackal-acconeer"].received=False
         if self.config_["jackal-ebreather"].run:
-            msg.event_respiration_rate = self.config_["jackal-ebreather"].reading
+            msg.event_respiration_rate.data = self.config_["jackal-ebreather"].reading
             self.config_["jackal-ebreather"].received = False
         if self.config_["jackal-mtts"].run:
-            msg.neural_heart_rate = self.config_["jackal-mtts"].reading
+            msg.neural_heart_rate.data = self.config_["jackal-mtts"].reading
             self.config_["jackal-mtts"].received = False
         if self.config_["jackal-pyvhr"].run:
-            msg.cv_heart_rate = self.config_["jackal-pyvhr"].reading
+            msg.cv_heart_rate.data = self.config_["jackal-pyvhr"].reading
             self.config_["jackal-pyvhr"].received = False
 
         self.detection_pub_.publish(msg)

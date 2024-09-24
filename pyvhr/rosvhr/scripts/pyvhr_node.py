@@ -2,7 +2,7 @@
 
 import rospy
 from sensor_msgs.msg import Image, CompressedImage
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, UInt8
 from cv_bridge import CvBridge, CvBridgeError
 import sys
 import cv2
@@ -38,10 +38,11 @@ class pyVHR:
         
         rospy.init_node('pyvhr_node', anonymous=True)
         rospy.Subscriber('/image/masked', Image, self.image_callback)
-        rospy.Subscriber("/jackal_telop/trigger", UInt8, self.trigger_callback)
+        rospy.Subscriber("/jackal_teleop/trigger", UInt8, self.trigger_callback)
 
         
     def trigger_callback(self, msg: UInt8) -> None:
+        print("got trigger")
         self.trigger_ = msg.data
 
     def decode_img_msg(self, msg: CompressedImage) -> np.ndarray:
@@ -59,7 +60,7 @@ class pyVHR:
             try:
                 # Decompress the image
                 #data = self.decode_img_msg(msg)
-
+                print("got trigger")
                 # Convert ROS Image message to OpenCV image
                 cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
                 #cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
@@ -77,7 +78,7 @@ class pyVHR:
                     # Publish heart rate
                     self.hr_pub.publish(Float32(hr))
                     self.frames = []
-
+                print("done")
             except CvBridgeError as e:
                 rospy.logerr("CvBridge Error: %s" % e)
             except Exception as e:
