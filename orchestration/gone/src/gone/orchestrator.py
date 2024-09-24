@@ -85,24 +85,24 @@ class Orchestrator:
 
     def tagCallback(self, msg : AprilTagDetectionArray) -> None:
         if self.trigger_ == 0 and self.casualty_id_ == None:
-            #if len(msg.detections) == 0:
-            #    print(termcolor.colored("[GROUND ORCHESTRATION] [WARN] No ID detected using 0", "yellow")) 
-            #    self.casualty_id_ = 0
-            #elif len(msg.detections) == 1:
-            #    self.casualty_id_ = msg.detections[0].id[0]
-            #else:
-            
-            for i, d in enumerate(msg.detections):
-                tag_cam_pose = d.pose.pose.pose
-                tag_id = d.id[0]
-                if i == 0:
-                    lesst_id = tag_id
-                    least_pose = tag_cam_pose
-                    continue
-                if tag_cam_pose.z < prev_pose.z:
-                    least_id = tag_id
-                    least_pose = tag_cam_pose
-            self.casualty_id_ = least_id
+            if len(msg.detections) == 0:
+                print(termcolor.colored("[GROUND ORCHESTRATION] [WARN] No ID detected using 0", "yellow")) 
+                self.casualty_id_ = 0
+            elif len(msg.detections) == 1:
+                self.casualty_id_ = msg.detections[0].id[0]
+            else:
+             
+                for i, d in enumerate(msg.detections):
+                    tag_cam_pose = d.pose.pose.pose
+                    tag_id = d.id[0]
+                    if i == 0:
+                        lesst_id = tag_id
+                        least_pose = tag_cam_pose
+                        continue
+                    if tag_cam_pose.z < prev_pose.z:
+                        least_id = tag_id
+                        least_pose = tag_cam_pose
+                self.casualty_id_ = least_id
             print("[GROUND-ORCHESTRATOR] Looking at ID: ", self.casualty_id_)
 
 
