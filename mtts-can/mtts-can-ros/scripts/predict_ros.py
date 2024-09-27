@@ -21,12 +21,15 @@ import os
 import sys
 import argparse
 sys.path.append('../')
-from mtts_can_ros.model import Attention_mask, MTTS_CAN
+from mtts_can_ros.model import Attention_mask, MTTS_CAN, TSM
 import h5py
 import matplotlib.pyplot as plt
 from scipy.signal import butter
 from skimage.util import img_as_float
 from mtts_can_ros.inference_preprocess import detrend
+
+from tensorflow.keras.models import load_model
+
 
 class HeartNetRos:
 
@@ -40,11 +43,19 @@ class HeartNetRos:
         self.distance_ = rospy.get_param("/mtts_hr/mtts-can/distance")
         path = rospy.get_param("mtts_hr/path")                            
 
+        gpus = tf.config.experimental.list_physical_devices("GPU")
+
+        if gpus:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+
         self.trigger_ = None
         self.processing_ = False
-
-        self.model_ = MTTS_CAN(10, 32, 64, (self.dim_, self.dim_, 3))
+        #print("++++ DIM +++++++ ", self.dim_)
+        self.model_ = MTTS_CAN(5, 32, 64, (self.dim_, self.dim_, 3))
         self.model_.load_weights(path)
+
+        #self.model_ = load_model(path, custom_objects={"TSM": TSM, "Attention_mask": Attention_mask})
 
         self.buffer_ = np.zeros((self.frame_rate_*self.duration_, self.dim_, self.dim_, 3))
         self.buffer_count_ = 0

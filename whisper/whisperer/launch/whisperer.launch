@@ -2,7 +2,6 @@
 	<arg name="threshold" default="10"/>
 	<arg name="model" default="base"/>
 
-	<include file="$(find sound_play)/soundplay_node.launch"/>
 
 	<node pkg="whisperer" type="mic_node.py" name="whisperer" output="screen">
 		<param name="timeout" value="$(arg timeout)"/>

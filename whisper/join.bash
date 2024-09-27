@@ -1,3 +1,4 @@
 #!/bin/bash
 
-docker exec -it dtc-jackal-phobos-whisper bash
+docker exec -it docker-jackal-whisper-1 bash
+

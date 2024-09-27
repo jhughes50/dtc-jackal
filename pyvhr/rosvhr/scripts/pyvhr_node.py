@@ -31,8 +31,9 @@ from pyVHR.extraction.sig_processing import SignalProcessing
 class pyVHR:
     def __init__(self):
         self.trigger_ = 0
+        self.processing_ = False
 
-        self.hr_pub = rospy.Publisher('hr', Float32, queue_size=10)
+        self.hr_pub = rospy.Publisher('heart_rate/pyvhr', Float32, queue_size=10)
         self.frames = []
         self.bridge = CvBridge()
         
@@ -42,8 +43,10 @@ class pyVHR:
 
         
     def trigger_callback(self, msg: UInt8) -> None:
-        print("got trigger")
         self.trigger_ = msg.data
+        if self.trigger_ > 0:
+            print("[PYVHR] Got Trigger")
+            self.processing_ = True
 
     def decode_img_msg(self, msg: CompressedImage) -> np.ndarray:
         # np_arr = np.fromstring(msg.data, np.uint8)
@@ -56,11 +59,10 @@ class pyVHR:
         '''
         Takes in the image and estimates heart rate.
         '''
-        if self.trigger_ > 0:
+        if self.trigger_ > 0 and self.processing_:
             try:
                 # Decompress the image
                 #data = self.decode_img_msg(msg)
-                print("got trigger")
                 # Convert ROS Image message to OpenCV image
                 cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
                 #cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
@@ -73,12 +75,13 @@ class pyVHR:
                     # Estimate heart rate (input single frame or list of frames?)
                     #cropped_frames = self.person_cropping(self.frames)
                     hr = self.pyvhr_est(self.frames)
-                    rospy.loginfo("Heart Rate: %f" % hr)
+                    rospy.loginfo("[PYVHR] Heart Rate: %f" % hr)
 
                     # Publish heart rate
                     self.hr_pub.publish(Float32(hr))
                     self.frames = []
-                print("done")
+                    self.processing_ = False
+                    print("[PYVHR] Done Processing")
             except CvBridgeError as e:
                 rospy.logerr("CvBridge Error: %s" % e)
             except Exception as e:

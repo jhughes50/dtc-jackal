@@ -104,5 +104,11 @@ RUN sudo chown $USER:$USER ~/.bashrc \
  && echo 'export PS1="\[$(tput setaf 2; tput bold)\]\u\[$(tput setaf 7)\]@\[$(tput setaf 3)\]\h\[$(tput setaf 7)\]:\[$(tput setaf 4)\]\W\[$(tput setaf 7)\]$ \[$(tput sgr0)\]"' >> ~/.bashrc
 
 RUN mkdir -p ws/src
-
+COPY ./rosvhr ./ws/src/rosvhr
 COPY ./entrypoint.bash entrypoint.bash
+
+ENV RUN=true
+
+RUN cd ~/ws \
+ && catkin config --extend /opt/ros/noetic \
+ && catkin build --no-status -DCMAKE_BUILD_TYPE=Release

@@ -22,8 +22,10 @@ docker run --rm -it --gpus all \
     -e QT_X11_NO_MITSHM=1 \
     -e XAUTHORITY=$XAUTH \
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+    -v ./utils/bag_to_images__GroundImage.py:/home/`whoami`/bag_to_images__GroundImage.py \
     -v `pwd`/../docker-compose.yml:/home/`whoami`/docker-compose.yml \
     -v ./config/sensor_services.yml:/home/`whoami`/sensor_services.yml \
+    -v `pwd`/../data:/home/`whoami`/data \
     --name dtc-jackal-phobos-orchestration \
     dtc-jackal-phobos:orchestrator \
     bash

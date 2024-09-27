@@ -26,6 +26,7 @@ class Orchestrator:
         self.casualty_id_ = None
         self.current_gps_ = NavSatFix()
         self.current_image_ = CompressedImage()
+        self.ground_msg_ = GroundImage()
 
         self.img_stop_ = True
         self.img_count_ = 0
@@ -53,7 +54,7 @@ class Orchestrator:
         rospy.Subscriber("/event/respiration_rate", Float32, self.eventReadingCallback)
         rospy.Subscriber("/heart_rate/model", Float32, self.mttsReadingCallback)
         rospy.Subscriber("/whisperer/text", String, self.whisperCallback)
-        rospy.Subscriber("/heart_rate/cv", Float32, self.vhrReadingCallback)
+        rospy.Subscriber("/heart_rate/pyvhr", Float32, self.vhrReadingCallback)
         
         self.detection_pub_ = rospy.Publisher("/ground_detection", GroundDetection, queue_size=2)
         self.img_pub_ = rospy.Publisher("/ground_image", GroundImage, queue_size=3)
@@ -142,15 +143,18 @@ class Orchestrator:
             self.img_count_ += 1
             if (self.img_count_ % 100 == 0) and self.send_3_ < 3:
                 self.send_3_ += 1
-                print("[GROUND-ORCHESTRATOR] Sending Image")
-                pmsg = GroundImage()
-                pmsg.image = msg
-                pmsg.header = msg.header
-                pmsg.casualty_id.data = self.casualty_id_
-                pmsg.gps = self.current_gps_
-        
-                self.img_pub_.publish(pmsg) 
-                print("[GROUND-ORCHESTRATOR] Image Sent")
+                if self.send_3_ == 1:
+                    self.ground_msg_.image1 = msg
+                    self.ground_msg_.casualty_id.data = self.casualty_id_
+                elif self.send_3_ == 2:
+                    self.ground_msg_.image2 = msg
+                elif self.send_3_ == 3:
+                    self.ground_msg_.image3 = msg
+                    self.ground_msg_.header.frame_id = "phobos"
+                    self.ground_msg_.gps = self.current_gps_
+                    print("[GROUND-ORCHESTRATOR] Sending Image")
+                    self.img_pub_.publish(self.ground_msg_) 
+                    print("[GROUND-ORCHESTRATOR] Image Sent")
 
     def gpsCallback(self, msg : NavSatFix) -> None:
         self.current_gps_ = msg
@@ -162,6 +166,7 @@ class Orchestrator:
             self.casualty_id_ = None
         else:
             self.send_3_ = 0
+            self.ground_msg_ = GroundImage()
 
     def overrideCallback(self, msg : Bool) -> None:
         if msg.data:

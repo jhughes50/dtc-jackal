@@ -1,0 +1,6 @@
+<launch>
+
+	<include file="$(find sound_play)/soundplay_node.launch"/>
+	<node pkg="speakerer" type="mic_node.py" name="speaker" output="screen"/>
+        
+</launch>

@@ -22,6 +22,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev:/dev
       - ./data:/home/dtc/data
+      - ./jackal/camera.launch:/home/dtc/ws/src/flir_camera_driver/spinnaker_camera_driver/launch/camera.launch
     entrypoint: /home/dtc/entrypoint.bash
     logging:
       driver: "local"
@@ -100,7 +101,7 @@ services:
     privileged: true
     tty: true
     environment:
-      - RUN=true
+      - RUN=false
       - TERM=xterm-256color
       - ROS_IP=127.0.0.1
       - ROS_MASTER_URI=http://localhost:11311/
@@ -131,7 +132,7 @@ services:
     privileged: true
     tty: true
     environment:
-      - RUN=false
+      - RUN=true
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
@@ -140,7 +141,37 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev:/dev
       - ./data:/home/dtc/data
-      - /etc/asound.conf:/etc/asound.conf
+      - ./whisper/config/asound.conf:/etc/asound.conf
+    entrypoint: /home/dtc/entrypoint.bash
+    logging:
+      driver: "local"
+      options:
+          max-size: "100m"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  
+  jackal-speaker:
+    build: speaker/
+    image: dtc-jackal-phobos:speaker
+    network_mode: host
+    privileged: true
+    tty: true
+    environment:
+      - RUN=true
+      - TERM=xterm-256color
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - QT_X11_NO_MITSHM=1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native 
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /dev:/dev
+      - ./data:/home/dtc/data
+      - ./speaker/config/asound.conf:/etc/asound.conf
     entrypoint: /home/dtc/entrypoint.bash
     logging:
       driver: "local"

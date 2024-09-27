@@ -105,7 +105,8 @@ RUN sudo chown $USER:$USER ~/.bashrc \
 
 # build the ROS workspace 
 
-RUN sudo adduser $USER audio
+RUN sudo adduser $USER audio 
+RUN sudo adduser $USER pulse-access
 ENV RUN=true
 
 RUN cd ~/ws \
