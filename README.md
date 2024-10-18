@@ -35,5 +35,31 @@ Each of the inference components run in their own respective docker images. More
  8. `speaker`: This controls the speaker.
  9. `whisper`: This contains an implementation of [whisper-mic](https://github.com/mallorbc/whisper_mic) for speech to text. 
 
+### Running MOCHA
+During the competition all communication is done through [MOCHA](https://github.com/KumarRobotics/MOCHA). This should be launched seperately from everything else after `docker compose up`. MOHCA is installed in the `orchestration` container. Once you've started everything with docker compose go to the orchestration folder and join the docker container, then launch mocha.
+```
+cd orchestration
+./join.bash
+roslaunch mocha_launch jackal.launch robot_name:=<phobos,deimos>
+```
+
 ### Bagging Data
-If you want to bag data, follow the start up instruction above. Once your started the jackal with the desired sensors and inference componenets, enter the `jackal-base` image. If you started in `tmux` split your window with `ctrl-b + %` or `ctrl-b + "`, then `cd jackal`. Enter the `jackal-base` image with `./join.bash`. You can also open a new terminal on your groundstation, ssh into the jackal navigate to the jackal directory and run `./join.bash` there. Once in `jackal-base` docker image run `cd data`. This is the persistent data directory and is where all rosbags should be saved. Now you can run `rosbag record <list_of_topics>` to start bagging. If you are bagging camera data bag the `<topic_name>/compressed`, additionally, do not bag event camera data for too long. If you want to bag lidar data, bag the `lidar_packets` and `imu_packets` rather than the point clouds. 
+If you want to bag data, follow the start up instruction above. Once your started the jackal with the desired sensors and inference componenets, enter the `jackal-base` image. If you started in `tmux` split your window with `ctrl-b + %` or `ctrl-b + "`, then `cd jackal`. Enter the `jackal-base` image with `./join.bash`. You can also open a new terminal on your groundstation, ssh into the jackal navigate to the jackal directory and run `./join.bash` there. Once in `jackal-base` docker image run `cd data`. This is the persistent data directory and is where all rosbags should be saved. Now you can run `rosbag record <list_of_topics>` to start bagging. If you are bagging camera data bag the `<topic_name>/compressed`, additionally, do not bag event camera data for too long. If you want to bag lidar data, bag the `lidar_packets` and `imu_packets` rather than the point clouds.
+
+Once you have collected your bag file, you can copy it over to your machine. If the file is not too large you can copy it over wifi with:
+``` 
+scp /path/to/<date_time>.bag <your_username>@<your_ip_address>:/path/to/<where_you_want_to_save_file>
+```
+If you files are large it will be faster to use one of the portable SSDs. __Note__: you can only use one of the dtc encrypted drives if you have a linux machine to copy it to. Plug the drive into the robot via usb. Run:
+```
+lsblk # to see the usb device name, usually sda1 or sdb1
+sudo cryptsetup luksOpen /dev/sda1 samsung_t7 # unencrypt
+sudo mount /dev/mapper/samsung_t7 /media/dtc # mount
+sudo cp /path/to/<bag_file>.bag /media/dtc/ #copies the files
+sudo umount /media/dtc # unmount when your done copying data
+sudo cryptsetup luksClose samsung_t7
+```
+Now the portable ssd can be safly unplugged. 
+
+### Notes
+Note that pytorch or tensorflow models are not included in this repo, neither are the install files for some of the jackal device drivers. This will have to be copied over manually.  
