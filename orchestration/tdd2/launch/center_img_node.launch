@@ -1,0 +1,9 @@
+<launch>
+
+  <!-- Start my subscriber-->
+  <node pkg="tdd2" type="center_img_node.py" name="centered_image" output="screen">
+    <!-- Set parameters for your node -->
+    <param name="threshold" value="200" />  
+  </node>
+
+</launch>

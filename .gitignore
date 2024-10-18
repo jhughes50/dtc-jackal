@@ -1,0 +1,10 @@
+**/*.pt
+**/*.pth
+**/*.deb
+**/*.hdf5
+**/*.bag
+**/*.png
+**/*.jar
+**/*.wav
+**/*.bag.active
+ebreather/respiration_detection_ws/

@@ -1,0 +1,12 @@
+<launch>
+	<arg name="threshold" default="10"/>
+	<arg name="model" default="base"/>
+
+
+	<node pkg="whisperer" type="mic_node.py" name="whisperer" output="screen">
+		<param name="timeout" value="$(arg timeout)"/>
+		<param name="model_root" value="$(find whisperer)/models/"/>
+		<param name="model" value="$(arg model)"/>
+	</node>
+        
+</launch>

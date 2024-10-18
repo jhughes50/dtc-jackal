@@ -1,0 +1,6 @@
+mtts-can:
+  frame_rate: 30
+  duration: 10
+  dim: 36
+  batch_size: 100
+  distance: 16  

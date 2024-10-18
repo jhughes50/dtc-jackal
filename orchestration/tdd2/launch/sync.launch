@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="tdd2" type="sync.py" name="sync" output="screen">
+	<rosparam file="$(find tdd2)/config/blackfly.yaml"/>
+	<param name="hfov" type="int" value="80"/>
+	<param name="vfov" type="int" value="40"/>
+    </node>
+</launch>

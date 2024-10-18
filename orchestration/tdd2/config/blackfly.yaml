@@ -1,0 +1,21 @@
+image_width: 2048
+image_height: 1536
+camera_name: camera/image_color
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [1244.1956841957776, 0., 1063.4203335213165, 0. , 1230.5326814020743, 723.9965263651354, 0. , 0. , 1.]
+camera_model: pinhole
+distortion_model: radtan
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.07862563907078624, -0.0021735471678558343, -0.006771021476519939, 0.0046152145712339415, 0.00]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [2348.257291, 0, 809.568039, 0, 0, 2344.569053, 563.818346, 0, 0, 0, 1, 0]
