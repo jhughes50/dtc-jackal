@@ -12,7 +12,7 @@ Run `sudo bash setup.bash` to install the udev rules on the jackals base OS. The
 ### What's Inside
 
 The device drivers are as followed:
-- [Spinnaker SDK 3.2.0](https://www.flir.com/products/spinnaker-sdk/?vertical=machine+vision&segment=iis), for the Chamelion3 RGB camera.
+- [Spinnaker SDK 3.2.0](https://www.flir.com/products/spinnaker-sdk/?vertical=machine+vision&segment=iis), for the Blackfly 3USB.
 - Modified [Boson SDK](https://github.com/jhughes50/boson-sdk), for the IR camera.
 - [Metavision SDK](https://docs.prophesee.ai/stable/index.html), for the event camera.
 - [FLIR ROS Driver](https://github.com/ros-drivers/flir_camera_driver), a ROS wrapper for the spinnaker camera.
