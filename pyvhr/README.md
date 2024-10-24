@@ -1,5 +1,8 @@
 # PYVHR
-This module does heart rate detection through red channel amplification. Perhaps Luying can add more about how it actually works. When a trigger is recieved it saves 10 seconds of masked images from the masking module. Once 10 seoncds are acquired the frames are passed through the algorithm. The heart rate is then published on the `heart_rate/pyvhr` topic. 
+This module does heart rate detection through red channel amplification. It uses remote photoplethysmography(rPPG) method called `cpu_CHROM` by default. 
+
+### How it works
+The pyvhr node listens to the `/jackal_teleop/trigger` topic, if the trigger > 0, it takes in 300 frames of masked images from rostopic `/image/masked` published by masking module. Once 300 frames of masked images are received, they are acquired to pass through the algorithm. In the following steps, ROI (skin area) is extracted in HSV color space and then passed on to BVP and BPM calculation. Finally, the heart rate number is publish on the rosropic `/hr`.
 
 ### Running Standalone
 Start the docker image: `./run.bash`
