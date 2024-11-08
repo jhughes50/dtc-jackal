@@ -8,9 +8,11 @@ To power on the jackals short the second and third pins from the left. The jacka
 There are thre main ways to log into the jackal. If you are indoors the jackal will automatically connect to the `mrsl_perch` network with the following static ips:
  - Phobos: `192.168.129.111`
  - Deimos: `192.168.129.112`
+
 If you go outdoors you can use the `jackalnet2` hotspot, the robots will automatically connect to it only if they are out of range with `mrsl_perch` with the following static ips:
  - Phobos: `192.168.50.111`
  - Deimos: `192.168.50.112`
+
 Finally, you may connect over the rajant network. The jackals will automatically connect to the rajant no matter what but note that the rajants take a few minutes to boot. To connect via rajant, use a rajant brick and connect to via ethernet. Assign yourself and a static ip address in the network configuration window on linux. Give yourself an ip address of `10.10.10.X` where X is in the range of `0 - 100` (over 100 is reserved for the robots), and a netmask of `255.0.0.0`. I strongly recommoned not using a windows computer for this. On the rajant network the jackals will have the following static ips:
  - Phobos: `10.10.10.111`
  - Deimos: `10.10.10.112`
@@ -59,7 +61,7 @@ sudo cp /path/to/<bag_file>.bag /media/dtc/ #copies the files
 sudo umount /media/dtc # unmount when your done copying data
 sudo cryptsetup luksClose samsung_t7
 ```
-Now the portable ssd can be safly unplugged. 
+Now the portable ssd can be safely unplugged. 
 
 ### Notes
 Note that pytorch or tensorflow models are not included in this repo, neither are the install files for some of the jackal device drivers. This will have to be copied over manually.  
