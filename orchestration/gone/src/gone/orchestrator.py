@@ -123,7 +123,7 @@ class Orchestrator:
 
     def eventReadingCallback(self, msg : Float32) -> None:
         if self.trigger_ != 0:
-            print(termcolor.colored("[GROUND-ORCHESTRATION] Received event reading","green"))
+            print(termcolor.colored("[GROUND-ORCHESTRATION][EBREATHER] Ready To Publish","green"))
             self.config_["jackal-ebreather"].received = True
             self.config_["jackal-ebreather"].reading = msg.data
 
@@ -146,7 +146,7 @@ class Orchestrator:
 
     def vhrReadingCallback(self, msg : Float32) -> None:
         if self.trigger_ != 0:
-            print(termcolor.colored("[GROUND-DETECTION] Received VHR reading","green"))
+            print(termcolor.colored("[GROUND-DETECTION][PYVHR] Ready To Publish","green"))
             self.config_["jackal-pyvhr"].received = True
             self.config_["jackal-pyvhr"].reading = msg.data
 
@@ -236,8 +236,8 @@ class Orchestrator:
             self.publish() 
             return
         #print(self.handler_.timer, self.handler_.published)
-        if self.handler_.timer > 30 and not self.handler_.published:
-            print(termcolor.colored("[GROUND-MONITOR][ERROR] Didn't receive all readings after 25 seconds, moving on.","red"))
+        if self.handler_.timer > 45 and not self.handler_.published:
+            print(termcolor.colored("[GROUND-MONITOR][ERROR] Didn't receive all readings after 45 seconds, moving on.","red"))
             self.handler_.published = True
             self.publish()
 
