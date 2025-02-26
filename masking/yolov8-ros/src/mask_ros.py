@@ -7,6 +7,7 @@
 
     DTC PRONTO 2024
 """
+# LAST EDIT -- Daudi November 21 2024 for Infrared Testing
 import rospy
 import numpy as np
 import cv2
@@ -25,9 +26,11 @@ class PersonMasker:
         self.detecting_ = False
         self.healthy_ = False
         
-        path = rospy.get_param("/masker_node/model_path")
+        #path = rospy.get_param("/masker_node/model_path")
+        path = "/home/dtc/Docker/masking/yolov8-ros/models/yolov8l.pt"
+
         self.model_ = YOLO(path, verbose=False)
- 
+
         self.crop_ = rospy.get_param("/masker_node/crop")
         
         self.bridge_ = CvBridge()
@@ -41,10 +44,12 @@ class PersonMasker:
 
     def imageCallback(self, msg : Image) -> None:
         self.healthy_ = True
-        cv_image = self.bridge_.imgmsg_to_cv2(msg, "bgr8")
+        cv_image = self.bridge_.imgmsg_to_cv2(msg, "mono16") # initially: bgr8 
         #np_arr = np.frombuffer(msg.data, np.uint8)
         #cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         H, W = cv_image.shape[:2]
+        cv_image = cv_image.astype(np.uint8)
+        cv_image = cv2.cvtColor(cv_image, cv2.COLOR_GRAY2RGB)
         output = self.model_(cv_image, verbose=False)[0]
 
         boxes = output.boxes
@@ -62,7 +67,7 @@ class PersonMasker:
             masks = masks[idx][:keep][0]
             mask = resize(masks.numpy(), (H, W))
 
-            m_arr = (mask * 255).astype(np.uint8)
+            m_arr = (mask * 65535).astype(np.uint16) # initially (mask * 255) and uint8
                        
             m_img = cv2.bitwise_and(cv_image, cv_image, mask=m_arr)
 
@@ -72,7 +77,7 @@ class PersonMasker:
                 m_img = m_img[boxes[1]:boxes[3], boxes[0]:boxes[2],:]
 
 
-            m_msg = self.bridge_.cv2_to_imgmsg(m_img, 'bgr8')
+            m_msg = self.bridge_.cv2_to_imgmsg(m_img, 'mono16') # initially bgr8
             m_msg.header = msg.header
            
             self.mask_pub_.publish(m_msg)

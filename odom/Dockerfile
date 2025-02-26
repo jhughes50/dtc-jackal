@@ -132,7 +132,8 @@ RUN mkdir -p ~/ws/src/
 RUN cd ws/src \
  && git clone -b refactor/v0.10 https://github.com/KumarRobotics/ouster_decoder \
  && git clone --recurse-submodules https://github.com/ouster-lidar/ouster-ros \
- && git clone https://github.com/versatran01/rofl-beta
+ && git clone https://github.com/jhughes50/rofl-beta \
+ && cd rofl-beta && git pull
 
 RUN sudo chown $USER:$USER ~/.bashrc \
  && /bin/sh -c 'echo ". /opt/ros/noetic/setup.bash" >> ~/.bashrc' \

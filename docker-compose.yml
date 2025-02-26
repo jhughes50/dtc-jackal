@@ -8,8 +8,8 @@ services:
     tty: true
     environment: 
       - GPS=false
-      - EVENT=true
-      - IR=true
+      - EVENT=false
+      - IR=false
       - RGB=true
       - OUSTER=false
       - ROS_IP=127.0.0.1
@@ -22,7 +22,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev:/dev
       - ./data:/home/dtc/data
-      - ./jackal/camera.launch:/home/dtc/ws/src/flir_camera_driver/spinnaker_camera_driver/launch/camera.launch
+      - ./jackal/launch/camera.launch:/home/dtc/ws/src/flir_camera_driver/spinnaker_camera_driver/launch/camera.launch
     entrypoint: /home/dtc/entrypoint.bash
     logging:
       driver: "local"
@@ -192,7 +192,7 @@ services:
     privileged: true
     tty: true
     environment:
-      - RUN=false
+      - RUN=true
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1

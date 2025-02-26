@@ -1,20 +1,6 @@
 <launch>
     <arg name="launch_prefix" default="" />
 
-    <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="apriltag_ros_continuous_node" clear_params="true" output="screen" launch-prefix="$(arg launch_prefix)">
-        <!-- Remap topics from those used in code to those on the ROS network -->
-        <remap from="image_rect" to="/camera/image_color" />
-        <remap from="camera_info" to="/camera/camera_info" />
-
-        <param name="publish_tag_detections_image" type="bool" value="true" /><!-- default: false -->
-        <param name="queue_size" type="int" value="1" />
-	<param name="remove_duplicates" value="false" />
-        <!-- load parameters (incl. tag family, tags, etc.) -->
-        <rosparam command="load" file="$(find apriltag_ros)/config/settings.yaml"/>
-        <rosparam command="load" file="$(find apriltag_ros)/config/tags.yaml"/>
-    </node>
-
-
     <param name="robot_name" value="phobos"/>
     <node pkg="gone" type="orchestrator_node.py" name="ground_orchestrator" output="screen">
         <param name="check_rate" value="0.1"/>

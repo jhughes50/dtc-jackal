@@ -10,6 +10,7 @@
 import rospy
 import numpy as np
 from std_msgs.msg import Float32, String, UInt8
+from geometry_msgs.msg import PointStamped
 import acconeer.exptool as et
 from acconeer.exptool import a121
 from acconeer.exptool.a121.algo.breathing import AppState, RefApp
@@ -144,7 +145,7 @@ def sensor_data_publisher():
 
     # Publishers for different data streams
     presence_pub = rospy.Publisher('/acconeer/presence', Presence, queue_size=10)
-    breathing_rate_pub = rospy.Publisher('/acconeer/respiration_rate', Float32, queue_size=10)
+    breathing_rate_pub = rospy.Publisher('/acconeer/respiration_rate', PointStamped, queue_size=10)
     breathing_pub = rospy.Publisher('/acconeer/respiration', Respiration, queue_size=10)
     presence_status_pub = rospy.Publisher('/acconeer/presence_status', String, queue_size=10)
     breathing_status_pub = rospy.Publisher('/acconeer/respiration_status', String, queue_size=10)
@@ -167,7 +168,8 @@ def sensor_data_publisher():
         rate_db = [0]
         #if ((sensor_probing_counter * frequency_ros_message) % frequency_sensor_probing) == 0:
         #    continue
-        if trigger() > 0:
+        
+        if True: #trigger() > 0:
             try:
                 
                 presence = PresenceData()
@@ -244,16 +246,20 @@ def sensor_data_publisher():
                     rate_db.append(breathing.breathing_rate)
                     if trigger.time > 15.0 and not trigger.sent:
                         trigger.reset()
-                        msg = Float32()
-                        msg.data = max(rate_db)
+                        msg = PointStamped()
+                        msg.header.stamp = rospy.Time.now()
+                        msg.header.frame_id = "acconeer"
+                        msg.point.x = max(rate_db)
                         breathing_rate_pub.publish(msg)
                     if ((sensor_probing_counter * frequency_ros_log) % frequency_sensor_probing) == 0:
                         pass
                         #rospy.loginfo(f"RESPIRATION RATE: {breathing.breathing_rate:.1f}")
                 elif trigger.time > 15.0 and not trigger.sent: 
                     trigger.reset()
-                    msg = Float32()
-                    msg.data = max(rate_db)
+                    msg = PointStamped()
+                    msg.header.stamp = rospy.Time.now()
+                    msg.header.frame_id = "acconeer"
+                    msg.point.x = max(rate_db)
                     breathing_rate_pub.publish(msg)
                 presence_status_pub.publish(presence.status)
                 breathing_status_pub.publish(breathing.status)

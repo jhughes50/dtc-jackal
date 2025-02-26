@@ -14,7 +14,8 @@ import numpy as np
 import cv2
 from cv_bridge import CvBridge
 from sensor_msgs.msg import NavSatFix, CompressedImage, Image
-from std_msgs.msg import Bool, Int32, Float32, String, UInt8
+from std_msgs.msg import Bool, Int32, Float32, String, UInt8, Float64
+from geometry_msgs.msg import PointStamped
 from apriltag_ros.msg import AprilTagDetectionArray
 from gone.services import ServiceModule
 from gone.msg import GroundDetection
@@ -56,11 +57,10 @@ class Orchestrator:
         rospy.Subscriber("/camera/image_color", Image, self.imageCallback)
         rospy.Subscriber("/jackal_teleop/trigger", UInt8, self.triggerCallback)
         rospy.Subscriber("/override", Bool, self.overrideCallback)
-        rospy.Subscriber("/tag_detections", AprilTagDetectionArray, self.tagCallback)
 
-        rospy.Subscriber("/acconeer/respiration_rate", Float32, self.acconeerReadingCallback)
-        rospy.Subscriber("/respiration_rate/model", Float32, self.mttsRespReadingCallback)
-        rospy.Subscriber("/heart_rate/model", Float32, self.mttsReadingCallback)
+        rospy.Subscriber("/acconeer/respiration_rate", PointStamped, self.acconeerReadingCallback)
+        rospy.Subscriber("/respiration_rate/model", PointStamped, self.mttsRespReadingCallback)
+        rospy.Subscriber("/heart_rate/model", PointStamped, self.mttsReadingCallback)
         rospy.Subscriber("/whisperer/text", String, self.whisperCallback)
         rospy.Subscriber("/heart_rate/pyvhr", Float32, self.vhrReadingCallback)
         
@@ -92,61 +92,47 @@ class Orchestrator:
                     break
 
 
-    def tagCallback(self, msg : AprilTagDetectionArray) -> None:
+    def gpsCallback(self, msg : NavSatFix) -> None:
         if self.trigger_ == 0 and self.casualty_id_ == None:
-            if len(msg.detections) == 0:
-                print(termcolor.colored("[GROUND ORCHESTRATION][WARN] ID Needed ", "yellow")) 
-                self.casualty_id_ = 0
-            elif len(msg.detections) == 1:
-                self.casualty_id_ = msg.detections[0].id[0]
-            else:
-             
-                for i, d in enumerate(msg.detections):
-                    tag_cam_pose = d.pose.pose.pose
-                    tag_id = d.id[0]
-                    if i == 0:
-                        least_id = tag_id
-                        least_pose = tag_cam_pose
-                        continue
-                    if tag_cam_pose.position.z < least_pose.position.z:
-                        least_id = tag_id
-                        least_pose = tag_cam_pose
-                self.casualty_id_ = least_id
-            print("[GROUND-ORCHESTRATOR][INFO] Ready for imaging")
-
+            self.casualty_id_ = hash((msg.latitude, msg.longitude)) & 0xFFFFFFFFFFFFFFFF
+            self.current_gps_ = msg
 
     def whisperCallback(self, msg : String) -> None:
         if self.trigger_ != 0:
-            print(termcolor.colored("[GROUND-ORCHESTRATOR][WHISPER] Ready To Publish","green"))
+            #print(termcolor.colored("[GROUND-ORCHESTRATOR][WHISPER] Ready To Publish","green"))
             self.config_["jackal-whisper"].received = True
             self.config_["jackal-whisper"].reading = msg.data
 
     def eventReadingCallback(self, msg : Float32) -> None:
+        # TODO update to add time
         if self.trigger_ != 0:
-            print(termcolor.colored("[GROUND-ORCHESTRATION][EBREATHER] Ready To Publish","green"))
+            #print(termcolor.colored("[GROUND-ORCHESTRATION][EBREATHER] Ready To Publish","green"))
             self.config_["jackal-ebreather"].received = True
             self.config_["jackal-ebreather"].reading = msg.data
 
-    def acconeerReadingCallback(self, msg : Float32) -> None:
+    def acconeerReadingCallback(self, msg : PointStamped) -> None:
         if self.trigger_ != 0:
-            print(termcolor.colored("[GROUND-ORCHESTRATION][ACCONEER] Ready To Publish","green"))
+            #print(termcolor.colored("[GROUND-ORCHESTRATION][ACCONEER] Ready To Publish","green"))
             self.config_["jackal-acconeer"].received = True
-            self.config_["jackal-acconeer"].reading = msg.data
+            self.config_["jackal-acconeer"].reading = msg.point.x
+            self.config_["jackal-acconeer"].header = msg.header
 
-    def mttsRespReadingCallback(self, msg : Float32) -> None:
+    def mttsRespReadingCallback(self, msg : PointStamped) -> None:
         if self.trigger_ != 0:
-            print(termcolor.colored("[GROUND-ORCHESATRATION][MTTS-HR] Ready To Publish","green"))
-            self.mtts_rr_reading_ = msg.data
+            #print(termcolor.colored("[GROUND-ORCHESATRATION][MTTS-HR] Ready To Publish","green"))
+            self.mtts_rr_reading_ = msg.point.x
 
-    def mttsReadingCallback(self, msg : Float32) -> None:
+    def mttsReadingCallback(self, msg : PointStamped) -> None:
         if self.trigger_ != 0:
-            print(termcolor.colored("[GROUND-ORCHESATRATION][MTTS-RR] Ready To Publish","green"))
+            #print(termcolor.colored("[GROUND-ORCHESATRATION][MTTS-RR] Ready To Publish","green"))
             self.config_["jackal-mtts"].received = True
-            self.config_["jackal-mtts"].reading = msg.data
+            self.config_["jackal-mtts"].reading = msg.point.x
+            self.config_["jackal-mtts"].header = msg.header
 
     def vhrReadingCallback(self, msg : Float32) -> None:
+        # TODO: add in time component
         if self.trigger_ != 0:
-            print(termcolor.colored("[GROUND-DETECTION][PYVHR] Ready To Publish","green"))
+            #print(termcolor.colored("[GROUND-DETECTION][PYVHR] Ready To Publish","green"))
             self.config_["jackal-pyvhr"].received = True
             self.config_["jackal-pyvhr"].reading = msg.data
 
@@ -177,12 +163,11 @@ class Orchestrator:
                     self.img_pub_.publish(self.ground_msg_) 
                     print("[GROUND-ORCHESTRATION] Sending images")
 
-    def gpsCallback(self, msg : NavSatFix) -> None:
-        self.current_gps_ = msg
+
 
     def triggerCallback(self, msg : UInt8) -> None:
         self.trigger_ = msg.data
-        print("[GROUND-MONITOR] Trigger: ", self.trigger_)
+        #print("[GROUND-MONITOR] Trigger: ", self.trigger_)
         self.timer_ = rospy.get_time()
         if self.trigger_ == 0:
             self.casualty_id_ = None
@@ -201,7 +186,10 @@ class Orchestrator:
         msg.header = self.current_image_.header
         msg.header.frame_id = self.name_
         msg.gps = self.current_gps_
-        msg.casualty_id.data = self.casualty_id_
+        if self.casualty_id_ is None:
+            msg.casualty_id.data = 0
+        else:
+            msg.casualty_id.data = self.casualty_id_
 
         msg.whisper.data = " "
 
@@ -210,13 +198,16 @@ class Orchestrator:
             self.config_["jackal-whisper"].received = False 
         if self.config_["jackal-acconeer"].run:
             msg.acconeer_respiration_rate.data = self.config_["jackal-acconeer"].reading
+            msg.acconeer_respiration_rate_header = self.config_["jackal-acconeer"].header
             self.config_["jackal-acconeer"].received=False
         if self.config_["jackal-ebreather"].run:
             msg.event_respiration_rate.data = self.config_["jackal-ebreather"].reading
             self.config_["jackal-ebreather"].received = False
         if self.config_["jackal-mtts"].run:
             msg.neural_heart_rate.data = self.config_["jackal-mtts"].reading
+            msg.neural_heart_rate_header = self.config_["jackal-mtts"].header
             msg.event_respiration_rate.data = self.mtts_rr_reading_
+            msg.event_respiration_rate_header = self.config_["jackal-mtts"].header
             self.config_["jackal-mtts"].received = False
         if self.config_["jackal-pyvhr"].run:
             msg.cv_heart_rate.data = self.config_["jackal-pyvhr"].reading
@@ -231,7 +222,7 @@ class Orchestrator:
                 ready += 1
         
         if ready == self.service_count_:
-            print(termcolor.colored("[GROUND-ORCHESTRATION][HEALTHY] Publishing Detections","green"))
+            #print(termcolor.colored("[GROUND-ORCHESTRATION][HEALTHY] Publishing Detections","green"))
             self.handler_.published = True
             self.publish() 
             return
@@ -254,7 +245,7 @@ class Orchestrator:
                     info_str = info_str + " " + service.upper() + termcolor.colored(" not ready ", "red")
                 else:
                     info_str = info_str + " " + service.upper() + " not running "
-
+            info_str += " trigger " + str(self.trigger_)
             print(info_str)
 
 

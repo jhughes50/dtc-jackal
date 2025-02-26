@@ -1,0 +1,2 @@
+SUBSYSTEM=="tty", ATTRS{idVendor}=="09cb", ATTRS{idProduct}=="4007", GROUP="dialout", SYMLINK="boson_ser"
+SUBSYSTEM=="video4linux", ATTRS{name}=="Boson*", GROUP="dialout", SYMLINK="boson_video", ATTR{index}=="0"

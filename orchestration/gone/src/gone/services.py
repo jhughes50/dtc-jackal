@@ -8,6 +8,8 @@
 
 """
 
+from std_msgs.msg import Header
+
 class ServiceModule:
 
     def __init__(self, service : str, run : bool) -> None:
@@ -16,6 +18,7 @@ class ServiceModule:
 
         self.received_ = False
         self.reading_ = None
+        self.header_ = Header()
 
     @property
     def service(self) -> str:
@@ -28,6 +31,14 @@ class ServiceModule:
     @property
     def received(self) -> bool:
         return self.received_
+
+    @property
+    def header(self) -> Header:
+        return self.header_
+
+    @header.setter
+    def header(self, h : Header) -> None:
+        self.header_ = h
 
     @received.setter
     def received(self, r : bool) -> None:

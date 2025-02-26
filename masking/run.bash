@@ -25,6 +25,7 @@ docker run --rm -it --gpus all \
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
     -v "./yolov8-ros:/home/`whoami`/ws/src/yolov8-ros" \
     -v "`pwd`/../data:/home/`whoami`/data" \
+    -v "./config:/home/`whoami`/config" \
     --name dtc-jackal-phobos-masking \
     dtc-jackal-phobos:masking \
     bash

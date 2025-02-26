@@ -34,8 +34,8 @@ docker run -it --rm --gpus all \
     -e PULSE_SERVER=unix:/run/user/1000/pulse/native \
     -v "/etc/localtime:/etc/localtime:ro" \
     -v "tmux.conf:/home/`whoami`/.tmux.conf" \
-    --add-host dcist:192.168.8.100 \
-    --add-host dcist:127.0.0.1 \
+    --add-host dtc:192.168.8.100 \
+    --add-host dtc:127.0.0.1 \
     --security-opt seccomp=unconfined \
     -e DISPLAY=$DISPLAY \
     -e QT_X11_NO_MITSHM=1 \
@@ -43,10 +43,6 @@ docker run -it --rm --gpus all \
     -v "./launch/camera.launch:/home/`whoami`/ws/src/flir_camera_driver/spinnaker_camera_driver/launch/camera.launch" \
     -v "./config/boson.yaml:/home/`whoami`/ws/src/eeyoreROS/config/boson.yaml" \
     -v "./config/zed_f9p.yaml:/home/`whoami`/ws/src/ublox/ublox_gps/config/zed_f9p.yaml" \
-    -v "./ws/src/waypoint_nav:/home/`whoami`/ws/src/waypoint_nav" \
-    -v "`pwd`/../../GONe:/home/`whoami`/ws/src/GONe" \
-    -v "./pennov_field_map.json:/home/`whoami`/pennov.json" \
-    -v "./pennov_outdoor.json:/home.`whoami`/pennov_outdoor.json" \
-    --name dtc-jackal-$(hostname)-base \
-    dtc-jackal-$(hostname):base \
+    --name dtc-jackal-$(hostname)-sensors \
+    dtc-jackal-$(hostname):sensors \
     bash

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+	<node name="waypoint_nav_node" pkg="waypoint_nav" type="waypoint_nav_node.py" output="screen">
+		<remap from="/odom" to="/os_node/rofl_odom/pose"/>
+	</node>
+</launch>
