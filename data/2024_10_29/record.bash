@@ -1,0 +1,1 @@
+rosbag record /acconeer/presence /acconeer/respiration /acconeer/respiration_rate /camera/boson/compressed /camera/image_color/compressed /event_camera/events /ground_detection /heart_rate/model /respiration_rate/model

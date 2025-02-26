@@ -5,6 +5,6 @@
     <node pkg="yolov8_ros" type="mask_ros.py" name="masker_node" output="screen">
         <param name="crop" type="bool" value="$(arg crop)"/>
 	<param name="model_path" type="string" value="$(find yolov8_ros)/models/yolov8l-seg.pt"/>
-	<remap from="/image" to="/camera/image_color"/>
+	<remap from="/image" to="/camera/boson"/>  
     </node>
 </launch>

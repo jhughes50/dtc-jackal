@@ -2,12 +2,16 @@ std_msgs/Header header
 
 sensor_msgs/NavSatFix gps
 
-sensor_msgs/CompressedImage image
-
-std_msgs/UInt8 casualty_id
+std_msgs/UInt64 casualty_id
 
 std_msgs/String whisper
-std_msgs/Float32 acconeer_respiration_rate
-std_msgs/Float32 event_respiration_rate
-std_msgs/Float32 neural_heart_rate
-std_msgs/Float32 cv_heart_rate 
+std_msgs/Float64 acconeer_respiration_rate
+std_msgs/Header acconeer_respiration_rate_header
+std_msgs/Float64 event_respiration_rate
+std_msgs/Header event_respiration_rate_header
+std_msgs/Float64 neural_heart_rate
+std_msgs/Header neural_heart_rate_header
+std_msgs/Float64 cv_heart_rate 
+std_msgs/Header cv_heart_rate_header
+std_msgs/Float64 neural_respiration_rate
+std_msgs/Header neural_respiration_rate_header

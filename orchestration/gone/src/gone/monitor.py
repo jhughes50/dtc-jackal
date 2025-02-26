@@ -29,7 +29,8 @@ class DTCGroundMonitor:
         rospy.Timer(rospy.Duration(2.0), self.monitorCallback)
 
     def triggerCallback(self, msg : UInt8) -> None:
-        print("[GROUND-MONITOR] trigger count : ", msg.data)
+        pass
+        #print("[GROUND-MONITOR] trigger count : ", msg.data)
 
     def diff(self) -> None:
         diff_list = list(self.differ_.compare(self.prev_nodes_, self.current_nodes_))
@@ -48,7 +49,8 @@ class DTCGroundMonitor:
             self.count_ += 1
         else:
             if len(self.current_nodes_) == len(self.prev_nodes_):
-                print("[GROUND-MONITOR] No nodes added or lost")
+                pass
+                #print("[GROUND-MONITOR] No nodes added or lost")
             else:
                 diff_list = self.diff()
             self.prev_nodes_ = self.current_nodes_

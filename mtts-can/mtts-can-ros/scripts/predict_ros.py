@@ -6,10 +6,11 @@
 
     DTC PRONTO 2024
 """
-
+import sys
 import rospy
 from sensor_msgs.msg import Image, CompressedImage
 from std_msgs.msg import Float32, UInt8
+from geometry_msgs.msg import PointStamped
 from cv_bridge import CvBridge
 from typing import Tuple
 
@@ -51,6 +52,7 @@ class HeartNetRos:
 
         self.trigger_ = None
         self.processing_ = False
+        self.complete_ = None
         
         self.model_ = MTTS_CAN(5, 32, 64, (self.dim_, self.dim_, 3))
         self.model_.load_weights(path)
@@ -61,14 +63,14 @@ class HeartNetRos:
         rospy.Subscriber("/image", Image, self.imageCallback)
         rospy.Subscriber("/jackal_teleop/trigger", UInt8, self.triggerCallback)
 
-        self.hr_pub_ = rospy.Publisher("/heart_rate/model", Float32, queue_size=2)
-        self.rr_pub_ = rospy.Publisher("/respiration_rate/model", Float32, queue_size=2)
+        self.hr_pub_ = rospy.Publisher("/heart_rate/model", PointStamped, queue_size=2)
+        self.rr_pub_ = rospy.Publisher("/respiration_rate/model", PointStamped, queue_size=2)
 
         rospy.Timer(rospy.Duration(2.0), self.statusCallback)
         rospy.loginfo("[MTTS-ROS] Heart Rate Net initialized")
 
     def statusCallback(self, call) -> None:
-        print("[MTTS-ROS] Trigger : ", self.trigger_, " Processing: ", self.processing_)
+        print("[MTTS-ROS] Trigger : ", self.trigger_, " Processing: ", self.processing_, " Complete ", self.complete_, "  ", end='\r')
 
     def preprocessFrame(self, frame : np.ndarray, height : int, width : int) -> np.ndarray:
         rframe = cv2.resize(img_as_float(frame[:, width//2 - (height//2+1):height//2+width//2,:]), (self.dim_, self.dim_), interpolation=cv2.INTER_AREA)
@@ -112,18 +114,24 @@ class HeartNetRos:
                 rpeaks = scipy.signal.find_peaks(resp, distance = 100)
                 rr = len(rpeaks[0])*time
 
-                hrmsg = Float32()
-                hrmsg.data = hr
+                hrmsg = PointStamped()
+                hrmsg.header.stamp = rospy.Time.now()
+                hrmsg.header.frame_id = "mtts-can"
+                hrmsg.point.x = hr
                 self.hr_pub_.publish(hrmsg)
 
-                rrmsg = Float32()
-                rrmsg.data = rr
+                rrmsg = PointStamped()
+                rrmsg.header.stamp = rospy.Time.now()
+                rrmsg.header.frame_id = "mtts-can"
+                rrmsg.point.x = rr
                 self.rr_pub_.publish(rrmsg)
 
-                rospy.loginfo("[MTTS-ROS] Heart Rate Complete")
+                #rospy.loginfo("[MTTS-ROS] Heart Rate Complete")
+                self.complete_ = True
                 self.processing_ = False
                 self.buffer_count_ = 0
             else:
+                self.complete_ = False
                 self.processing_ = True
                 self.buffer_count_ += 1
 
