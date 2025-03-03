@@ -11,7 +11,7 @@ services:
       - EVENT=false
       - IR=false
       - RGB=true
-      - OUSTER=false
+      - OUSTER=true
       - ROS_IP=127.0.0.1
       - ROS_MASTER_URI=http://127.0.0.1:11311/
       - TERM=xterm-256color

@@ -6,4 +6,4 @@ sensor_msgs/CompressedImage image1
 sensor_msgs/CompressedImage image2
 sensor_msgs/CompressedImage image3
 
-std_msgs/UInt8 casualty_id
+std_msgs/UInt64 casualty_id

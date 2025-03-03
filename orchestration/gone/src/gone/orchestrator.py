@@ -12,6 +12,7 @@ import yaml
 import termcolor
 import numpy as np
 import cv2
+import random
 from cv_bridge import CvBridge
 from sensor_msgs.msg import NavSatFix, CompressedImage, Image
 from std_msgs.msg import Bool, Int32, Float32, String, UInt8, Float64
@@ -154,7 +155,10 @@ class Orchestrator:
                 n_msg.data = np.array(encimg).tostring()
                 if self.send_3_ == 1:
                     self.ground_msg_.image1 = n_msg
-                    self.ground_msg_.casualty_id.data = self.casualty_id_
+                    if self.casualty_id_ is None:
+                        self.ground_msg_.casualty_id.data = 0#random.randint(0,255)
+                    else:
+                        self.ground_msg_.casualty_id.data = self.casualty_id_
                 elif self.send_3_ == 2:
                     self.ground_msg_.image2 = n_msg
                 elif self.send_3_ == 3:
@@ -187,7 +191,7 @@ class Orchestrator:
         msg.header.frame_id = self.name_
         msg.gps = self.current_gps_
         if self.casualty_id_ is None:
-            msg.casualty_id.data = 0
+            msg.casualty_id.data = 0#random.randint(0,255)
         else:
             msg.casualty_id.data = self.casualty_id_
 
