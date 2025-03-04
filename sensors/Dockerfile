@@ -208,6 +208,14 @@ RUN cd ws/src \
  && cd .. \
  && git clone --recurse-submodules https://github.com/ouster-lidar/ouster-ros
 
+# Audio
+RUN sudo apt update \
+ && sudo apt-get install -y --fix-missing ros-noetic-audio-common
+RUN sudo adduser $USER audio
+# blackfly clean up
+RUN sudo groupadd flirimaging
+RUN sudo adduser $USER flirimaging
+
 # Sensor startup
 COPY sensors/ ws/src/sensors
 
@@ -234,6 +242,7 @@ ENV IR=false
 ENV EVENT=false
 ENV GPS=false
 ENV ZED=false
+ENV MICROPHONE=false
 
 RUN sudo chown $USER:$USER ~/.bashrc \
  && /bin/sh -c 'echo ". /opt/ros/noetic/setup.bash" >> ~/.bashrc' \

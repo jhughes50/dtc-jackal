@@ -2,7 +2,7 @@ version: '3.8'
 services:
   jackal-base:
     build: jackal/
-    image: dtc-jackal-phobos:base
+    image: dtc-jackal-deimos:sensors
     network_mode: host
     privileged: true
     tty: true
@@ -12,8 +12,9 @@ services:
       - IR=false
       - RGB=true
       - OUSTER=false
-      - ROS_IP=192.168.129.111
-      - ROS_MASTER_URI=http://192.168.129.111:11311/
+      - MICROPHONE=true
+      - ROS_IP=127.0.0.1
+      - ROS_MASTER_URI=http://127.0.0.1:11311/
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
@@ -22,7 +23,7 @@ services:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /dev:/dev
       - ./data:/home/dtc/data
-      - ./jackal/camera.launch:/home/dtc/ws/src/flir_camera_driver/spinnaker_camera_driver/launch/camera.launch
+      - ./sensors/launch/camera.launch:/home/dtc/ws/src/flir_camera_driver/spinnaker_camera_driver/launch/camera.launch
     entrypoint: /home/dtc/entrypoint.bash
     logging:
       driver: "local"
@@ -38,12 +39,12 @@ services:
 
   jackal-acconeer:
     build: acconeer/
-    image: dtc-jackal-phobos:acconeer
+    image: dtc-jackal-deimos:acconeer
     network_mode: host
     privileged: true
     tty: true
     environment:
-      - RUN=true
+      - RUN=false
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
@@ -67,7 +68,7 @@ services:
 
   jackal-ebreather:
     build: ebreather/
-    image: dtc-jackal-phobos:ebreather
+    image: dtc-jackal-deimos:ebreather
     network_mode: host
     privileged: true
     tty: true
@@ -96,7 +97,7 @@ services:
 
   jackal-masking:
     build: masking/
-    image: dtc-jackal-phobos:masking
+    image: dtc-jackal-deimos:masking
     network_mode: host
     privileged: true
     tty: true
@@ -127,12 +128,12 @@ services:
 
   jackal-whisper:
     build: whisper/
-    image: dtc-jackal-phobos:whisper
+    image: dtc-jackal-deimos:whisper
     network_mode: host
     privileged: true
     tty: true
     environment:
-      - RUN=true
+      - RUN=false
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
@@ -157,12 +158,12 @@ services:
   
   jackal-speaker:
     build: speaker/
-    image: dtc-jackal-phobos:speaker
+    image: dtc-jackal-deimos:speaker
     network_mode: host
     privileged: true
     tty: true
     environment:
-      - RUN=true
+      - RUN=false
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
@@ -187,12 +188,12 @@ services:
 
   jackal-mtts:
     build: mtts-can/
-    image: dtc-jackal-phobos:mtts
+    image: dtc-jackal-deimos:mtts
     network_mode: host
     privileged: true
     tty: true
     environment:
-      - RUN=true
+      - RUN=false
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
@@ -216,7 +217,7 @@ services:
 
   jackal-pyvhr:
     build: pyvhr/
-    image: dtc-jackal-phobos:pyvhr
+    image: dtc-jackal-deimos:pyvhr
     network_mode: host
     privileged: true
     tty: true
@@ -245,12 +246,12 @@ services:
 
   jackal-orchestration:
     build: orchestration/
-    image: dtc-jackal-phobos:orchestrator
+    image: dtc-jackal-deimos:orchestrator
     network_mode: host
     privileged: true
     tty: true
     environment:
-      - RUN=true
+      - RUN=false
       - TERM=xterm-256color
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
@@ -265,6 +266,7 @@ services:
       - ./orchestration/config/robot_configs.yaml:/home/dtc/ws/src/MOCHA/mocha_core/config/robot_configs.yaml
       - ./orchestration/config/topic_configs.yaml:/home/dtc/ws/src/MOCHA/mocha_core/config/topic_configs.yaml
       - ./orchestration/watchstate:/home/dtc/ws/src/MOCHA/interface_rajant/scripts/thirdParty/watchstate
+      - ./acconeer/acconeer_radar_sensor:/home/dtc/ws/src/acconeer_radar_sensor/
     entrypoint: /home/dtc/entrypoint.bash
     logging:
       driver: "local"

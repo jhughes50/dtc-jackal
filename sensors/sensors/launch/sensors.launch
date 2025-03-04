@@ -6,6 +6,7 @@
   <arg name="ir" default="False"/>
   <arg name="event" default="False"/>
   <arg name="zed" default="False"/>
+  <arg name="microphone" default="False"/>
 
   <group if="$(arg ouster)">
     <!-- Ouster Launch -->
@@ -41,5 +42,15 @@
   <group if="$(arg zed)">
     <include file="$(find zed_wrapper)/launch/zed2.launch"/>
   </group>
+
+  <group if="$(arg microphone)">
+    <include file="$(find audio_capture)/launch/capture.launch">
+      <arg name="device" value="hw:0,0"/>
+      <arg name="channels" value="1"/>
+      <arg name="sample_rate" value="48000"/>
+      <arg name="depth" value="16"/>
+    </include>
+  </group>
+
 
 </launch>
